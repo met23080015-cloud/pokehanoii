@@ -12,9 +12,11 @@ const STATUS: Record<OrderStatus, { label: string; cls: string }> = {
 export default function OrderCard({
   order,
   onStatus,
+  onPaid,
 }: {
   order: Order;
   onStatus: (id: string, status: OrderStatus) => void;
+  onPaid: (id: string) => void;
 }) {
   const time = new Date(order.created_at).toLocaleTimeString("vi-VN", {
     hour: "2-digit",
@@ -59,12 +61,30 @@ export default function OrderCard({
         <span className="rounded-full bg-sand px-2 py-0.5 font-medium">
           {order.pay_method === "vietqr" ? "VietQR" : "Tại quầy"}
         </span>
+        {order.paid ? (
+          <span className="rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700">
+            ✓ Đã thanh toán
+          </span>
+        ) : (
+          <span className="rounded-full bg-red-50 px-2 py-0.5 font-semibold text-red-600">
+            Chưa thanh toán
+          </span>
+        )}
         <span className="ml-auto text-base font-extrabold text-ink tabular-nums">
           {formatVND(order.total_price)}
         </span>
       </div>
 
       <div className="mt-3 flex justify-end gap-2">
+        {!order.paid && (
+          <button
+            type="button"
+            onClick={() => onPaid(order.id)}
+            className="press rounded-xl border border-brand-600 px-4 py-2 text-sm font-bold text-brand-700"
+          >
+            Xác nhận đã trả
+          </button>
+        )}
         {order.status === "pending" && (
           <button
             type="button"

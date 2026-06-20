@@ -72,6 +72,20 @@ export default function AdminDashboard() {
     }
   }
 
+  async function setPaid(id: string) {
+    if (!supabase) return;
+    let snapshot: Order[] = [];
+    setOrders((prev) => {
+      snapshot = prev;
+      return prev.map((o) => (o.id === id ? { ...o, paid: true } : o));
+    });
+    const { error } = await supabase.from("orders").update({ paid: true }).eq("id", id);
+    if (error) {
+      setOrders(snapshot);
+      alert("Cập nhật thất bại — phiên đăng nhập có thể đã hết hạn.");
+    }
+  }
+
   if (!supabase) {
     return (
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-700">
@@ -92,7 +106,7 @@ export default function AdminDashboard() {
         </p>
       )}
       {orders.map((o) => (
-        <OrderCard key={o.id} order={o} onStatus={updateStatus} />
+        <OrderCard key={o.id} order={o} onStatus={updateStatus} onPaid={setPaid} />
       ))}
     </div>
   );

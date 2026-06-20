@@ -86,7 +86,11 @@
         "protein": 10,
         "fat": 6.5,
         "fiber": 0,
-        "image": "/menu/poke-salmon.png"
+        "image": "/menu/poke-salmon.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-tuna",
@@ -98,7 +102,11 @@
         "protein": 12,
         "fat": 0.5,
         "fiber": 0,
-        "image": "/menu/poke-tuna.png"
+        "image": "/menu/poke-tuna.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-spicy-salmon",
@@ -110,7 +118,11 @@
         "protein": 10,
         "fat": 9.5,
         "fiber": 0,
-        "image": "/menu/poke-spicy-salmon.png"
+        "image": "/menu/poke-spicy-salmon.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-spicy-tuna",
@@ -122,7 +134,11 @@
         "protein": 12,
         "fat": 3.5,
         "fiber": 0,
-        "image": "/menu/poke-spicy-tuna.png"
+        "image": "/menu/poke-spicy-tuna.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-octopus",
@@ -134,7 +150,11 @@
         "protein": 15,
         "fat": 1,
         "fiber": 0,
-        "image": "/menu/poke-octopus.png"
+        "image": "/menu/poke-octopus.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-shrimp",
@@ -146,7 +166,11 @@
         "protein": 12,
         "fat": 0.2,
         "fiber": 0,
-        "image": "/menu/poke-shrimp.png"
+        "image": "/menu/poke-shrimp.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "poke-vegan",
@@ -222,7 +246,10 @@
         "protein": 0.3,
         "fat": 11,
         "fiber": 0,
-        "image": "/menu/sauce-wasabi-mayo.png"
+        "image": "/menu/sauce-wasabi-mayo.png",
+        "tags": [
+          "animal"
+        ]
       },
       {
         "id": "sauce-spicy-mayo",
@@ -234,7 +261,10 @@
         "protein": 0.3,
         "fat": 10,
         "fiber": 0,
-        "image": "/menu/sauce-spicy-mayo.png"
+        "image": "/menu/sauce-spicy-mayo.png",
+        "tags": [
+          "animal"
+        ]
       },
       {
         "id": "sauce-shiso-miso",
@@ -261,7 +291,11 @@
         "protein": 3,
         "fat": 1,
         "fiber": 0,
-        "image": "/menu/top-tobiko.png"
+        "image": "/menu/top-tobiko.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "top-guacamole",
@@ -298,7 +332,11 @@
         "protein": 2,
         "fat": 1,
         "fiber": 0,
-        "image": "/menu/top-crab-salad.png"
+        "image": "/menu/top-crab-salad.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "top-edamame",
@@ -406,7 +444,10 @@
         "protein": 2,
         "fat": 2,
         "fiber": 0,
-        "image": "/menu/top-quail-egg.png"
+        "image": "/menu/top-quail-egg.png",
+        "tags": [
+          "animal"
+        ]
       },
       {
         "id": "top-mango",
@@ -516,7 +557,11 @@
         "protein": 0.5,
         "fat": 0.7,
         "fiber": 0.3,
-        "image": "/menu/crisp-furikake.png"
+        "image": "/menu/crisp-furikake.png",
+        "tags": [
+          "seafood",
+          "animal"
+        ]
       },
       {
         "id": "crisp-togarashi",

@@ -3,9 +3,13 @@
 import { useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import type { PayMethod } from "@/lib/supabase/types";
+import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
+import { setRecent } from "@/lib/favorites";
 import Logo from "@/components/brand/Logo";
 import CalorieTarget from "./CalorieTarget";
 import GroupStep from "./GroupStep";
+import DietaryFilter from "./DietaryFilter";
+import FavoritesBar from "./FavoritesBar";
 import NutritionSidebar from "./NutritionSidebar";
 import Checkout from "@/components/checkout/Checkout";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
@@ -14,8 +18,18 @@ import ChatWidget from "@/components/ai/ChatWidget";
 type View = "build" | "checkout" | "confirmed";
 
 export default function OrderBuilder() {
-  const { tableNo, reset } = useBowl();
+  const { tableNo, reset, selection, calorieTarget, setQty } = useBowl();
   const [view, setView] = useState<View>("build");
+  const [diet, setDiet] = useState<DietFilter[]>([]);
+
+  // Khi bật filter: bỏ chọn các món bị ẩn (tránh "ghost item" vẫn tính tiền/calo)
+  function applyDiet(next: DietFilter[]) {
+    Object.keys(selection).forEach((id) => {
+      const it = getItem(id);
+      if (it && isHiddenByDiet(it, next)) setQty(id, 0);
+    });
+    setDiet(next);
+  }
   const [confirmed, setConfirmed] = useState<{
     id: string;
     payMethod: PayMethod;
@@ -46,6 +60,7 @@ export default function OrderBuilder() {
         <Checkout
           onBack={() => setView("build")}
           onConfirmed={(id, payMethod, token) => {
+            setRecent({ selection, target: calorieTarget }); // cho "Đặt lại"
             setConfirmed({ id, payMethod, token });
             setView("confirmed");
           }}
@@ -71,13 +86,15 @@ export default function OrderBuilder() {
         )}
       </header>
 
+      <FavoritesBar />
       <CalorieTarget />
-      <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." />
-      <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." />
-      <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." />
-      <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." />
-      <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." />
-      <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." />
+      <DietaryFilter value={diet} onChange={applyDiet} />
+      <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." diet={diet} />
+      <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." diet={diet} />
+      <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." diet={diet} />
+      <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." diet={diet} />
+      <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." diet={diet} />
+      <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." diet={diet} />
 
       <NutritionSidebar onCheckout={() => setView("checkout")} />
       <ChatWidget />

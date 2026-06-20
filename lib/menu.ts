@@ -21,6 +21,19 @@ export interface MenuItem {
   premiumFee?: number;
   /** Optional ảnh món — đặt file ở public/menu/<id>.jpg rồi set "/menu/<id>.jpg". */
   image?: string;
+  /** Nhãn ăn kiêng: "seafood" (hải sản), "animal" (nguồn động vật). Không tag = thuần chay-friendly. */
+  tags?: string[];
+}
+
+export type DietFilter = "vegan" | "no-seafood";
+
+/** Món có bị ẩn theo bộ lọc ăn kiêng đang bật không. */
+export function isHiddenByDiet(item: MenuItem, filters: DietFilter[]): boolean {
+  const tags = item.tags ?? [];
+  if (filters.includes("vegan") && (tags.includes("animal") || tags.includes("seafood")))
+    return true;
+  if (filters.includes("no-seafood") && tags.includes("seafood")) return true;
+  return false;
 }
 
 export interface Pricing {

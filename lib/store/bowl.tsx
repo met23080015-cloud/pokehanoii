@@ -21,6 +21,7 @@ type Action =
   | { type: "setQty"; id: string; qty: number }
   | { type: "toggle"; id: string }
   | { type: "selectSingle"; group: GroupKey; id: string }
+  | { type: "loadSelection"; selection: Selection; target?: number }
   | { type: "reset" };
 
 function reducer(state: BowlState, action: Action): BowlState {
@@ -45,6 +46,12 @@ function reducer(state: BowlState, action: Action): BowlState {
       selection[action.id] = 1;
       return { ...state, selection };
     }
+    case "loadSelection":
+      return {
+        ...state,
+        selection: { ...action.selection },
+        calorieTarget: action.target ?? state.calorieTarget,
+      };
     case "reset":
       return { ...state, selection: {}, calorieTarget: state.calorieTarget };
     default:
@@ -58,6 +65,7 @@ interface BowlContextValue extends BowlState {
   setQty: (id: string, qty: number) => void;
   toggle: (id: string) => void;
   selectSingle: (group: GroupKey, id: string) => void;
+  loadSelection: (selection: Selection, target?: number) => void;
   reset: () => void;
 }
 
@@ -85,6 +93,8 @@ export function BowlProvider({
     setQty: (id, qty) => dispatch({ type: "setQty", id, qty }),
     toggle: (id) => dispatch({ type: "toggle", id }),
     selectSingle: (group, id) => dispatch({ type: "selectSingle", group, id }),
+    loadSelection: (selection, target) =>
+      dispatch({ type: "loadSelection", selection, target }),
     reset: () => dispatch({ type: "reset" }),
   };
 

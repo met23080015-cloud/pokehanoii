@@ -1,6 +1,12 @@
 "use client";
 
-import { groups, GROUP_LABELS, type GroupKey } from "@/lib/menu";
+import {
+  groups,
+  GROUP_LABELS,
+  isHiddenByDiet,
+  type GroupKey,
+  type DietFilter,
+} from "@/lib/menu";
 import { useBowl } from "@/lib/store/bowl";
 import ItemCard from "./ItemCard";
 
@@ -9,11 +15,14 @@ interface Props {
   groupKey: GroupKey;
   mode: "single" | "multi" | "qty";
   help?: string;
+  diet?: DietFilter[];
 }
 
-export default function GroupStep({ step, groupKey, mode, help }: Props) {
+export default function GroupStep({ step, groupKey, mode, help, diet = [] }: Props) {
   const { selection, toggle, setQty, selectSingle } = useBowl();
-  const items = groups[groupKey];
+  const items = groups[groupKey].filter((it) => !isHiddenByDiet(it, diet));
+
+  if (items.length === 0) return null;
 
   return (
     <section className="scroll-mt-4" id={`step-${groupKey}`}>

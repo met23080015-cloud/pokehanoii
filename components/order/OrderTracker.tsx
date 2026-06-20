@@ -106,9 +106,18 @@ export default function OrderTracker({ token }: { token: string }) {
           <span>Tổng</span>
           <span>{formatVND(order.total_price)}</span>
         </div>
-        <p className="mt-1 text-right text-xs text-ink/45">
-          {order.pay_method === "vietqr" ? "Chuyển khoản VietQR" : "Trả tại quầy"}
-        </p>
+        <div className="mt-1 flex items-center justify-end gap-2 text-xs">
+          <span className="text-ink/45">
+            {order.pay_method === "vietqr" ? "Chuyển khoản VietQR" : "Trả tại quầy"}
+          </span>
+          <span
+            className={`rounded-full px-2 py-0.5 font-semibold ${
+              order.paid ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {order.paid ? "✓ Đã thanh toán" : "Chưa thanh toán"}
+          </span>
+        </div>
       </div>
 
       <p className="text-center text-xs text-ink/35">Trang tự cập nhật mỗi vài giây.</p>

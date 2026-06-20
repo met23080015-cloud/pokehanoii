@@ -21,6 +21,7 @@ export interface Order {
   total_price: number;
   pay_method: PayMethod;
   status: OrderStatus;
+  paid?: boolean;
   created_at: string;
 }
 
