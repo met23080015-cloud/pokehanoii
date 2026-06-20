@@ -39,7 +39,7 @@ export async function POST(req: Request) {
   const supabase = getServerSupabase();
   if (!supabase) {
     return NextResponse.json(
-      { error: "Supabase chưa cấu hình (thiếu env)" },
+      { error: "Server chưa cấu hình SUPABASE_SERVICE_ROLE_KEY" },
       { status: 503 },
     );
   }
@@ -57,12 +57,17 @@ export async function POST(req: Request) {
       pay_method: payMethod,
       status: "pending",
     })
-    .select("id")
+    .select("id, order_token")
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ id: data.id, totals, pay_method: payMethod });
+  return NextResponse.json({
+    id: data.id,
+    order_token: data.order_token,
+    totals,
+    pay_method: payMethod,
+  });
 }

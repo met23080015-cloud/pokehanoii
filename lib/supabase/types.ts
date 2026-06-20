@@ -11,6 +11,7 @@ export interface OrderLineItem {
 
 export interface Order {
   id: string;
+  order_token: string;
   table_no: number | null;
   items: OrderLineItem[];
   total_kcal: number;

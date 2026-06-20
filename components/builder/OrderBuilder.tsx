@@ -19,6 +19,7 @@ export default function OrderBuilder() {
   const [confirmed, setConfirmed] = useState<{
     id: string;
     payMethod: PayMethod;
+    token?: string;
   } | null>(null);
 
   if (view === "confirmed" && confirmed) {
@@ -26,6 +27,7 @@ export default function OrderBuilder() {
       <main className="mx-auto max-w-md p-4">
         <OrderConfirmation
           orderId={confirmed.id}
+          orderToken={confirmed.token}
           tableNo={tableNo}
           payMethod={confirmed.payMethod}
           onNewOrder={() => {
@@ -43,8 +45,8 @@ export default function OrderBuilder() {
       <main>
         <Checkout
           onBack={() => setView("build")}
-          onConfirmed={(id, payMethod) => {
-            setConfirmed({ id, payMethod });
+          onConfirmed={(id, payMethod, token) => {
+            setConfirmed({ id, payMethod, token });
             setView("confirmed");
           }}
         />

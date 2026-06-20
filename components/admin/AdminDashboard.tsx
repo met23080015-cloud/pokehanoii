@@ -66,7 +66,9 @@ export default function AdminDashboard() {
     const { error } = await supabase.from("orders").update({ status }).eq("id", id);
     if (error) {
       setOrders(snapshot); // rollback
-      alert("Cập nhật trạng thái thất bại, vui lòng thử lại.");
+      alert(
+        "Cập nhật thất bại — phiên đăng nhập có thể đã hết hạn. Hãy đăng xuất và đăng nhập lại.",
+      );
     }
   }
 

@@ -13,7 +13,7 @@ export default function Checkout({
   onConfirmed,
 }: {
   onBack: () => void;
-  onConfirmed: (orderId: string, payMethod: PayMethod) => void;
+  onConfirmed: (orderId: string, payMethod: PayMethod, orderToken?: string) => void;
 }) {
   const { selection, totals, tableNo } = useBowl();
   const [payMethod, setPayMethod] = useState<PayMethod>("counter");
@@ -34,7 +34,7 @@ export default function Checkout({
         setError(data.error || "Không gửi được đơn");
         return;
       }
-      onConfirmed(data.id, payMethod);
+      onConfirmed(data.id, payMethod, data.order_token);
     } catch {
       setError("Lỗi kết nối, thử lại.");
     } finally {

@@ -4,11 +4,13 @@ import type { PayMethod } from "@/lib/supabase/types";
 
 export default function OrderConfirmation({
   orderId,
+  orderToken,
   tableNo,
   payMethod,
   onNewOrder,
 }: {
   orderId: string;
+  orderToken?: string;
   tableNo: number | null;
   payMethod: PayMethod;
   onNewOrder: () => void;
@@ -34,6 +36,14 @@ export default function OrderConfirmation({
           ? "Vui lòng hoàn tất chuyển khoản. Nhân viên sẽ xác nhận đơn của bạn."
           : "Vui lòng ra quầy thanh toán khi nhận món."}
       </p>
+      {orderToken && (
+        <a
+          href={`/order/${orderToken}`}
+          className="press rounded-2xl bg-brand-600 px-5 py-2.5 font-bold text-white shadow-soft"
+        >
+          Theo dõi đơn
+        </a>
+      )}
       <button
         type="button"
         onClick={onNewOrder}

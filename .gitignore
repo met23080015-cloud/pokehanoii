@@ -40,3 +40,5 @@ next-env.d.ts
 
 # ảnh chụp màn hình dev (không phải code app)
 /shots/
+
+.vercel
