@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/save-prompt-journey.js\"",
+            "timeout": 10,
+            "statusMessage": "Saving prompt to journey log"
+          }
+        ]
+      }
+    ]
+  }
+}

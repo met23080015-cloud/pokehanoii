@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-image: radial-gradient(
+      120% 60% at 50% -10%,
+      rgba(19, 138, 120, 0.08),
+      transparent 60%
+    );
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: #138a78;
+    color: #fff;
+  }
+}
+
+@layer utilities {
+  /* tactile press — collapses under reduced motion */
+  .press {
+    transition: transform 0.12s ease, background-color 0.15s ease,
+      border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .press:active {
+      transform: scale(0.97);
+    }
+  }
+  .fade-in {
+    animation: fadeIn 0.35s ease both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fade-in {
+      animation: none;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
