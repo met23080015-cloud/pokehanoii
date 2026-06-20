@@ -23,20 +23,8 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
           : "border-black/5 bg-white hover:border-brand-200"
       }`}
     >
-      {item.image && (
-        <div className="-mx-3 -mt-3 mb-1 overflow-hidden rounded-t-2xl bg-sand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={item.image}
-            alt={item.vi}
-            loading="lazy"
-            className="h-20 w-full object-cover"
-          />
-        </div>
-      )}
-
       {selected && mode !== "qty" && (
-        <span className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[11px] font-bold text-white shadow-soft">
+        <span className="pointer-events-none absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[11px] font-bold text-white shadow-soft">
           ✓
         </span>
       )}
@@ -44,8 +32,19 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
       <button
         type="button"
         onClick={mode === "qty" ? onInc : onToggle}
-        className="flex flex-col gap-0.5 pr-5 text-left"
+        className="flex flex-col gap-0.5 text-left"
       >
+        {item.image && (
+          <div className="-mx-3 -mt-3 mb-1 overflow-hidden rounded-t-2xl bg-sand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.image}
+              alt={item.vi}
+              loading="lazy"
+              className="h-20 w-full object-cover"
+            />
+          </div>
+        )}
         <span className="font-semibold leading-tight text-ink">{item.vi}</span>
         <span className="text-[11px] text-ink/40">{item.en}</span>
       </button>
