@@ -48,3 +48,20 @@ export function setRecent(bowl: RecentBowl) {
 export function getRecent(): RecentBowl | null {
   return read<RecentBowl | null>(RECENT_KEY, null);
 }
+
+// "Đặt lại" từ trang khác (vd /account): nạp 1 lần khi mở builder
+const PENDING_KEY = "poke_pending_load";
+export function setPendingLoad(bowl: RecentBowl) {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(PENDING_KEY, JSON.stringify(bowl));
+}
+export function consumePendingLoad(): RecentBowl | null {
+  if (typeof window === "undefined") return null;
+  const v = sessionStorage.getItem(PENDING_KEY);
+  if (v) sessionStorage.removeItem(PENDING_KEY);
+  try {
+    return v ? (JSON.parse(v) as RecentBowl) : null;
+  } catch {
+    return null;
+  }
+}

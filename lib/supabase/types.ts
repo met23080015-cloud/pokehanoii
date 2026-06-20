@@ -22,8 +22,18 @@ export interface Order {
   pay_method: PayMethod;
   status: OrderStatus;
   paid?: boolean;
+  user_id?: string | null;
   created_at: string;
 }
+
+export interface Customer {
+  user_id: string;
+  points: number;
+  created_at: string;
+}
+
+/** Điểm thưởng: 1 điểm cho mỗi 10.000đ. */
+export const POINTS_PER_VND = 10000;
 
 /** Payload client gửi lên /api/orders (server tính lại totals từ selection). */
 export interface CreateOrderPayload {

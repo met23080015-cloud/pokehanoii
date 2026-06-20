@@ -44,10 +44,20 @@ export async function POST(req: Request) {
     );
   }
 
+  // Khách đăng nhập (tùy chọn): xác thực JWT → gắn user_id để tích điểm + lịch sử
+  let userId: string | null = null;
+  const auth = req.headers.get("authorization");
+  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (token) {
+    const { data: u } = await supabase.auth.getUser(token);
+    userId = u.user?.id ?? null;
+  }
+
   const { data, error } = await supabase
     .from("orders")
     .insert({
       table_no: body.table_no ?? null,
+      user_id: userId,
       items,
       total_kcal: totals.kcal,
       total_protein: totals.protein,
@@ -63,6 +73,9 @@ export async function POST(req: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  // Điểm loyalty được cộng tự động qua DB trigger khi staff xác nhận "đã thanh toán"
+  // (xem migration 0004) — không cộng ở đây để tránh farm đơn chưa trả.
 
   return NextResponse.json({
     id: data.id,

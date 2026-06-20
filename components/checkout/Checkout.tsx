@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import type { PayMethod } from "@/lib/supabase/types";
 import CheckoutSummary from "./CheckoutSummary";
 import PaymentChoice from "./PaymentChoice";
@@ -24,9 +25,18 @@ export default function Checkout({
     setSubmitting(true);
     setError(null);
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      // gửi token nếu khách đã đăng nhập → tích điểm + lưu vào lịch sử
+      const sb = getSupabaseClient();
+      if (sb) {
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        if (session) headers.Authorization = `Bearer ${session.access_token}`;
+      }
       const res = await fetch("/api/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ table_no: tableNo, selection, pay_method: payMethod }),
       });
       const data = await res.json();

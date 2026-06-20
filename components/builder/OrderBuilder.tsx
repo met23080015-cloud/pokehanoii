@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import type { PayMethod } from "@/lib/supabase/types";
 import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
-import { setRecent } from "@/lib/favorites";
+import { setRecent, consumePendingLoad } from "@/lib/favorites";
 import Logo from "@/components/brand/Logo";
 import CalorieTarget from "./CalorieTarget";
 import GroupStep from "./GroupStep";
@@ -18,9 +18,16 @@ import ChatWidget from "@/components/ai/ChatWidget";
 type View = "build" | "checkout" | "confirmed";
 
 export default function OrderBuilder() {
-  const { tableNo, reset, selection, calorieTarget, setQty } = useBowl();
+  const { tableNo, reset, selection, calorieTarget, setQty, loadSelection } = useBowl();
   const [view, setView] = useState<View>("build");
   const [diet, setDiet] = useState<DietFilter[]>([]);
+
+  // "Đặt lại" từ trang /account: nạp selection đã lưu khi mở builder
+  useEffect(() => {
+    const p = consumePendingLoad();
+    if (p) loadSelection(p.selection, p.target);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Khi bật filter: bỏ chọn các món bị ẩn (tránh "ghost item" vẫn tính tiền/calo)
   function applyDiet(next: DietFilter[]) {
@@ -79,11 +86,20 @@ export default function OrderBuilder() {
             Tự build bát theo mục tiêu calo
           </p>
         </div>
-        {tableNo != null && (
-          <span className="rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white shadow-soft">
-            Bàn {tableNo}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {tableNo != null && (
+            <span className="rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white shadow-soft">
+              Bàn {tableNo}
+            </span>
+          )}
+          <a
+            href="/account"
+            aria-label="Tài khoản"
+            className="press flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow-soft"
+          >
+            👤
+          </a>
+        </div>
       </header>
 
       <FavoritesBar />
