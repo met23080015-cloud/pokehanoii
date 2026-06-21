@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/brand/Logo";
+import { useBowl } from "@/lib/store/bowl";
 import QuickActions from "./QuickActions";
 
 // TODO: thay bằng địa chỉ thật của quán
@@ -28,6 +29,7 @@ export default function WelcomeScreen({
   onStart: () => void;
 }) {
   const router = useRouter();
+  const { setTable } = useBowl();
   const [tbl, setTbl] = useState("");
 
   // Tính giờ sau khi mount để tránh lệch hydration (server UTC vs client local)
@@ -38,7 +40,9 @@ export default function WelcomeScreen({
   function confirmTable(e: React.FormEvent) {
     e.preventDefault();
     const n = parseInt(tbl, 10);
-    if (n > 0) router.push(`/?table=${n}`);
+    if (n <= 0) return;
+    setTable(n); // cập nhật state ngay (UI đổi tức thì)
+    router.replace(`/?table=${n}`); // đồng bộ URL để refresh giữ được bàn
   }
 
   return (

@@ -3,6 +3,7 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   type ReactNode,
@@ -19,6 +20,7 @@ interface BowlState {
 
 type Action =
   | { type: "setTarget"; value: number }
+  | { type: "setTable"; value: number }
   | { type: "setQty"; id: string; qty: number }
   | { type: "toggle"; id: string }
   | { type: "selectSingle"; group: GroupKey; id: string }
@@ -29,6 +31,8 @@ function reducer(state: BowlState, action: Action): BowlState {
   switch (action.type) {
     case "setTarget":
       return { ...state, calorieTarget: action.value };
+    case "setTable":
+      return { ...state, tableNo: action.value };
     case "setQty": {
       const selection = { ...state.selection, [action.id]: action.qty };
       if (action.qty <= 0) delete selection[action.id];
@@ -63,6 +67,7 @@ function reducer(state: BowlState, action: Action): BowlState {
 interface BowlContextValue extends BowlState {
   totals: Totals;
   setTarget: (v: number) => void;
+  setTable: (v: number) => void;
   setQty: (id: string, qty: number) => void;
   toggle: (id: string) => void;
   selectSingle: (group: GroupKey, id: string) => void;
@@ -85,6 +90,12 @@ export function BowlProvider({
     selection: {},
   });
 
+  // Đồng bộ tableNo từ URL (?table=N) khi đổi sau mount — useReducer chỉ dùng
+  // initial state 1 lần, nên cần effect này để badge bàn cập nhật.
+  useEffect(() => {
+    if (tableNo != null) dispatch({ type: "setTable", value: tableNo });
+  }, [tableNo]);
+
   // Giá có thể được admin chỉnh trong menu_config (realtime); mặc định = menu.json
   const config = useMenuConfig();
   const totals = useMemo(
@@ -96,6 +107,7 @@ export function BowlProvider({
     ...state,
     totals,
     setTarget: (value) => dispatch({ type: "setTarget", value }),
+    setTable: (value) => dispatch({ type: "setTable", value }),
     setQty: (id, qty) => dispatch({ type: "setQty", id, qty }),
     toggle: (id) => dispatch({ type: "toggle", id }),
     selectSingle: (group, id) => dispatch({ type: "selectSingle", group, id }),
