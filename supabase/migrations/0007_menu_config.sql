@@ -25,8 +25,9 @@ create policy "staff update config" on menu_config for update
   using (auth.uid() in (select user_id from staff))
   with check (auth.uid() in (select user_id from staff));
 
-do $$ begin
-  alter publication supabase_realtime add table menu_config;
-exception when others then null; end $$;
-
 notify pgrst, 'reload schema';
+
+-- Realtime (TÙY CHỌN): KHÔNG dùng "alter publication … add table" trong cùng block
+-- vì nếu nó lỗi sẽ rollback cả create table. Nếu muốn giá đổi realtime ở builder,
+-- bật qua Dashboard → Database → Replication → supabase_realtime → toggle menu_config.
+-- Không bật cũng được: builder nạp giá khi mở (computeTotals fallback menu.json nếu thiếu).

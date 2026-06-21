@@ -41,4 +41,12 @@ next-env.d.ts
 # ảnh chụp màn hình dev (không phải code app)
 /shots/
 
+# script test/QA cục bộ — chứa thông tin đăng nhập test, KHÔNG push
+/scripts/admin-test.cjs
+/scripts/admin-svc-test.cjs
+/scripts/admin-pages-shot.cjs
+/scripts/auto86-test.cjs
+/scripts/rt-test.cjs
+/scripts/avail-rt.cjs
+
 .vercel
