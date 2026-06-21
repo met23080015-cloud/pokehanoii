@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import type { PayMethod } from "@/lib/supabase/types";
 import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
+import { useUnavailable } from "@/lib/use-unavailable";
 import { setRecent, consumePendingLoad } from "@/lib/favorites";
 import Logo from "@/components/brand/Logo";
 import WelcomeScreen from "./WelcomeScreen";
@@ -22,6 +23,15 @@ export default function OrderBuilder() {
   const { tableNo, reset, selection, calorieTarget, setQty, loadSelection } = useBowl();
   const [view, setView] = useState<View>("welcome");
   const [diet, setDiet] = useState<DietFilter[]>([]);
+  const unavailable = useUnavailable();
+
+  // Món vừa bị 86 (hết hàng) mà khách đã chọn → bỏ chọn để không tính tiền/calo "ma".
+  useEffect(() => {
+    Object.keys(selection).forEach((id) => {
+      if (unavailable.has(id)) setQty(id, 0);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unavailable]);
 
   // "Đặt lại" từ trang /account: nạp selection đã lưu và vào thẳng trình build
   useEffect(() => {
@@ -113,12 +123,12 @@ export default function OrderBuilder() {
       <FavoritesBar />
       <CalorieTarget />
       <DietaryFilter value={diet} onChange={applyDiet} />
-      <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." diet={diet} />
-      <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." diet={diet} />
-      <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." diet={diet} />
-      <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." diet={diet} />
-      <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." diet={diet} />
-      <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." diet={diet} />
+      <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." diet={diet} unavailable={unavailable} />
+      <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." diet={diet} unavailable={unavailable} />
+      <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." diet={diet} unavailable={unavailable} />
+      <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." diet={diet} unavailable={unavailable} />
+      <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." diet={diet} unavailable={unavailable} />
+      <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." diet={diet} unavailable={unavailable} />
 
       <NutritionSidebar onCheckout={() => setView("checkout")} />
       <ChatWidget />

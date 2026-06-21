@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import AdminGate from "./AdminGate";
 import AdminDashboard from "./AdminDashboard";
+import AdminNav from "./AdminNav";
 
 type Status = "loading" | "out" | "in";
 
-export default function AdminAuthGate() {
+export default function AdminAuthGate({ children }: { children?: React.ReactNode }) {
   const supabase = getSupabaseClient();
   const [status, setStatus] = useState<Status>("loading");
   const [email, setEmail] = useState("");
@@ -63,17 +64,17 @@ export default function AdminAuthGate() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between text-sm text-ink/55">
-        <span>👤 {email}</span>
+      <div className="flex items-center justify-between gap-2 text-sm text-ink/55">
+        <AdminNav />
         <button
           type="button"
           onClick={() => supabase?.auth.signOut()}
-          className="press rounded-full bg-white px-3 py-1 font-semibold text-brand-700 shadow-soft"
+          className="press shrink-0 rounded-full bg-white px-3 py-1 font-semibold text-brand-700 shadow-soft"
         >
           Đăng xuất
         </button>
       </div>
-      <AdminDashboard />
+      {children ?? <AdminDashboard />}
     </div>
   );
 }

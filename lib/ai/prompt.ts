@@ -1,5 +1,7 @@
 import { groups, GROUP_LABELS, getItem, thresholds, type GroupKey } from "@/lib/menu";
 import type { Selection, Totals } from "@/lib/nutrition";
+import type { Analytics } from "@/lib/analytics";
+import { formatVND } from "@/lib/nutrition";
 
 /** Bối cảnh menu nén lại cho AI (tên + macro + id). AI chỉ dùng số này, không bịa. */
 export function buildMenuContext(): string {
@@ -57,6 +59,33 @@ ${buildMenuContext()}
 
 === TRẠNG THÁI BOWL CỦA KHÁCH ===
 ${describeBowl(bowl)}`;
+}
+
+/** Prompt insight kinh doanh cho admin — bơm số liệu thật, AI chỉ diễn giải. */
+export function buildAdminInsightPrompt(a: Analytics): string {
+  const s = a.summary;
+  const top = a.topItems.slice(0, 6).map((i) => `${i.vi} (${i.qty})`).join(", ") || "—";
+  const slow = a.slowItems.map((i) => `${i.vi} (${i.qty})`).join(", ") || "—";
+  const peak = a.peakHours
+    .map((c, h) => ({ h, c }))
+    .filter((x) => x.c > 0)
+    .sort((x, y) => y.c - x.c)
+    .slice(0, 3)
+    .map((x) => `${x.h}h (${x.c} đơn)`)
+    .join(", ") || "—";
+
+  return `Bạn là cố vấn kinh doanh cho quán Poke Hanoi. Dựa HOÀN TOÀN vào số liệu thật dưới đây, đưa nhận định và đề xuất NGẮN GỌN bằng tiếng Việt. TUYỆT ĐỐI KHÔNG bịa thêm con số ngoài dữ liệu.
+
+=== SỐ LIỆU (do hệ thống tính) ===
+- Tổng đơn: ${s.orderCount} | Đã thanh toán: ${s.paidCount} (${s.paidRate}%)
+- Doanh thu đã thu: ${formatVND(s.revenue)} | Giá trị đơn TB: ${formatVND(s.avgOrderValue)}
+- Calo trung bình/đơn: ${s.avgKcal} kcal
+- Thanh toán: tại quầy ${a.payMix.counter} đơn, VietQR ${a.payMix.vietqr} đơn
+- Món bán chạy: ${top}
+- Món bán chậm: ${slow}
+- Giờ cao điểm: ${peak}
+
+Trả về đúng cấu trúc yêu cầu: headline, observations (3-4 quan sát), actions (tối đa 3 đề xuất). Đề xuất phải cụ thể, khả thi cho quán nhỏ.`;
 }
 
 export function buildAnalyzePrompt(bowl: BowlContext): string {

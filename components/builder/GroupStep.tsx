@@ -16,11 +16,21 @@ interface Props {
   mode: "single" | "multi" | "qty";
   help?: string;
   diet?: DietFilter[];
+  unavailable?: Set<string>;
 }
 
-export default function GroupStep({ step, groupKey, mode, help, diet = [] }: Props) {
+export default function GroupStep({
+  step,
+  groupKey,
+  mode,
+  help,
+  diet = [],
+  unavailable,
+}: Props) {
   const { selection, toggle, setQty, selectSingle } = useBowl();
-  const items = groups[groupKey].filter((it) => !isHiddenByDiet(it, diet));
+  const items = groups[groupKey].filter(
+    (it) => !isHiddenByDiet(it, diet) && !unavailable?.has(it.id),
+  );
 
   if (items.length === 0) return null;
 

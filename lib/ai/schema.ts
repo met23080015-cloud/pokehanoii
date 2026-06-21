@@ -17,3 +17,23 @@ export const analyzeSchema = z.object({
 });
 
 export type AnalyzeResult = z.infer<typeof analyzeSchema>;
+
+/** AI insight kinh doanh cho admin — diễn giải số liệu thật, đề xuất hành động. */
+export const insightSchema = z.object({
+  headline: z.string().describe("nhận định tổng quan 1 câu, tiếng Việt"),
+  observations: z
+    .array(z.string())
+    .max(4)
+    .describe("3-4 quan sát ngắn rút ra từ số liệu (không bịa số)"),
+  actions: z
+    .array(
+      z.object({
+        title: z.string().describe("đề xuất hành động ngắn gọn"),
+        detail: z.string().describe("giải thích 1 câu vì sao"),
+      }),
+    )
+    .max(3)
+    .describe("tối đa 3 đề xuất kinh doanh cụ thể"),
+});
+
+export type InsightResult = z.infer<typeof insightSchema>;
