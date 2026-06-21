@@ -20,7 +20,11 @@ drop policy if exists "staff delete unavailable" on menu_unavailable;
 create policy "staff delete unavailable" on menu_unavailable for delete
   using (auth.uid() in (select user_id from staff));
 
--- Realtime để builder + admin cập nhật tức thì
+-- Realtime để builder + admin cập nhật tức thì.
+-- Bắt MỌI exception (vd publication ở chế độ FOR ALL TABLES) để KHÔNG rollback bảng.
 do $$ begin
   alter publication supabase_realtime add table menu_unavailable;
-exception when duplicate_object then null; end $$;
+exception when others then null; end $$;
+
+-- Báo PostgREST nạp lại schema để thấy bảng mới ngay (tránh lỗi PGRST205).
+notify pgrst, 'reload schema';
