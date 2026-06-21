@@ -35,6 +35,17 @@ export interface Customer {
 /** Điểm thưởng: 1 điểm cho mỗi 10.000đ. */
 export const POINTS_PER_VND = 10000;
 
+/** Yêu cầu tại bàn gửi từ màn hình bắt đầu (giống thao tác nhanh của iPOS o2o). */
+export type ServiceRequestType = "service" | "bill" | "feedback";
+export interface ServiceRequest {
+  id: string;
+  table_no: number | null;
+  type: ServiceRequestType;
+  note: string | null;
+  status: "open" | "done";
+  created_at: string;
+}
+
 /** Payload client gửi lên /api/orders (server tính lại totals từ selection). */
 export interface CreateOrderPayload {
   table_no: number | null;

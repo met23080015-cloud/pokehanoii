@@ -6,6 +6,7 @@ import type { PayMethod } from "@/lib/supabase/types";
 import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
 import { setRecent, consumePendingLoad } from "@/lib/favorites";
 import Logo from "@/components/brand/Logo";
+import WelcomeScreen from "./WelcomeScreen";
 import CalorieTarget from "./CalorieTarget";
 import GroupStep from "./GroupStep";
 import DietaryFilter from "./DietaryFilter";
@@ -15,17 +16,20 @@ import Checkout from "@/components/checkout/Checkout";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
 import ChatWidget from "@/components/ai/ChatWidget";
 
-type View = "build" | "checkout" | "confirmed";
+type View = "welcome" | "build" | "checkout" | "confirmed";
 
 export default function OrderBuilder() {
   const { tableNo, reset, selection, calorieTarget, setQty, loadSelection } = useBowl();
-  const [view, setView] = useState<View>("build");
+  const [view, setView] = useState<View>("welcome");
   const [diet, setDiet] = useState<DietFilter[]>([]);
 
-  // "Đặt lại" từ trang /account: nạp selection đã lưu khi mở builder
+  // "Đặt lại" từ trang /account: nạp selection đã lưu và vào thẳng trình build
   useEffect(() => {
     const p = consumePendingLoad();
-    if (p) loadSelection(p.selection, p.target);
+    if (p) {
+      loadSelection(p.selection, p.target);
+      setView("build");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -42,6 +46,10 @@ export default function OrderBuilder() {
     payMethod: PayMethod;
     token?: string;
   } | null>(null);
+
+  if (view === "welcome") {
+    return <WelcomeScreen tableNo={tableNo} onStart={() => setView("build")} />;
+  }
 
   if (view === "confirmed" && confirmed) {
     return (
