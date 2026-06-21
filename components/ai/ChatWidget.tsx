@@ -1,7 +1,7 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import { getSupabaseClient } from "@/lib/supabase/client";
 
@@ -53,11 +53,46 @@ export default function ChatWidget() {
     });
   };
 
+  // --- Kéo thả panel ---
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+  const drag = useRef<{ dx: number; dy: number } | null>(null);
+
+  function openPanel() {
+    if (!pos) {
+      const w = Math.min(384, window.innerWidth * 0.92);
+      const h = window.innerHeight * 0.6;
+      setPos({
+        x: window.innerWidth - w - 16,
+        y: Math.max(16, window.innerHeight - h - 96),
+      });
+    }
+    setOpen(true);
+  }
+
+  function startDrag(e: React.PointerEvent) {
+    if (!panelRef.current) return;
+    const r = panelRef.current.getBoundingClientRect();
+    drag.current = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+  }
+  function moveDrag(e: React.PointerEvent) {
+    if (!drag.current || !panelRef.current) return;
+    const w = panelRef.current.offsetWidth;
+    const h = panelRef.current.offsetHeight;
+    const x = Math.max(8, Math.min(e.clientX - drag.current.dx, window.innerWidth - w - 8));
+    const y = Math.max(8, Math.min(e.clientY - drag.current.dy, window.innerHeight - h - 8));
+    setPos({ x, y });
+  }
+  function endDrag() {
+    drag.current = null;
+  }
+
   return (
     <>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => (open ? setOpen(false) : openPanel())}
         className="press fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-bar sm:bottom-6"
         aria-label="Tư vấn dinh dưỡng"
       >
@@ -65,10 +100,29 @@ export default function ChatWidget() {
       </button>
 
       {open && (
-        <div className="fade-in fixed bottom-44 right-4 z-40 flex h-[60vh] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-bar sm:bottom-24">
-          <div className="flex items-center justify-between bg-brand-600 px-4 py-3 text-white">
-            <span className="font-bold">🤖 Tư vấn dinh dưỡng</span>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Đóng">
+        <div
+          ref={panelRef}
+          style={pos ? { left: pos.x, top: pos.y } : undefined}
+          className="fade-in fixed z-40 flex h-[60vh] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-bar"
+        >
+          <div
+            onPointerDown={startDrag}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+            className="flex touch-none cursor-move select-none items-center justify-between bg-brand-600 px-4 py-3 text-white"
+          >
+            <span className="flex items-center gap-2 font-bold">
+              <span className="opacity-70" aria-hidden>
+                ⠿
+              </span>
+              🤖 Tư vấn dinh dưỡng
+            </span>
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => setOpen(false)}
+              aria-label="Đóng"
+            >
               ✕
             </button>
           </div>
