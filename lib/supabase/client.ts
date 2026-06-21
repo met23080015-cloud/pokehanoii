@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+// .trim(): tránh khoảng trắng thừa khi copy-paste env (space đầu key làm hỏng
+// realtime — apikey nhét vào query param websocket sẽ thành "%20…" và bị từ chối).
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
 export const isSupabaseConfigured = Boolean(url && anonKey);
 
