@@ -21,12 +21,19 @@ export interface Totals {
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
 
+/** Cấu hình giá ghi đè (từ menu_config). Thiếu field nào thì dùng mặc định menu.json. */
+export interface PriceConfig {
+  basePrice?: number;
+  extraPokeFee?: number;
+}
+
 /**
  * Tính tổng dinh dưỡng + giá từ selection.
  * Giá: basePrice + extraPokeFee * (số muỗng đạm vượt quá 1) + tổng premiumFee.
  * Đây là NGUỒN CHÂN LÝ — server tính lại, AI không tự tính.
+ * `config` (tùy chọn) ghi đè giá từ DB; mặc định dùng menu.json (giữ test cũ pass).
  */
-export function computeTotals(selection: Selection): Totals {
+export function computeTotals(selection: Selection, config?: PriceConfig): Totals {
   let kcal = 0,
     protein = 0,
     fat = 0,
@@ -53,8 +60,10 @@ export function computeTotals(selection: Selection): Totals {
     }
   }
 
-  const extraPoke = Math.max(0, proteinScoops - 1) * pricing.extraPokeFee;
-  const price = pricing.basePrice + extraPoke + premiumFees;
+  const basePrice = config?.basePrice ?? pricing.basePrice;
+  const extraFee = config?.extraPokeFee ?? pricing.extraPokeFee;
+  const extraPoke = Math.max(0, proteinScoops - 1) * extraFee;
+  const price = basePrice + extraPoke + premiumFees;
 
   return {
     kcal: Math.round(kcal),

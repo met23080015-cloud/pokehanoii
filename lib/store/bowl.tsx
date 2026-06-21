@@ -9,6 +9,7 @@ import {
 } from "react";
 import { groups, type GroupKey } from "@/lib/menu";
 import { computeTotals, type Selection, type Totals } from "@/lib/nutrition";
+import { useMenuConfig } from "@/lib/use-menu-config";
 
 interface BowlState {
   tableNo: number | null;
@@ -84,7 +85,12 @@ export function BowlProvider({
     selection: {},
   });
 
-  const totals = useMemo(() => computeTotals(state.selection), [state.selection]);
+  // Giá có thể được admin chỉnh trong menu_config (realtime); mặc định = menu.json
+  const config = useMenuConfig();
+  const totals = useMemo(
+    () => computeTotals(state.selection, config),
+    [state.selection, config],
+  );
 
   const value: BowlContextValue = {
     ...state,

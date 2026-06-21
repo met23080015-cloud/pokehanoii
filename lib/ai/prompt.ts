@@ -41,7 +41,14 @@ export function describeBowl(bowl: BowlContext): string {
   ].join("\n");
 }
 
-export function buildSystemPrompt(bowl: BowlContext): string {
+/** Đoạn cá nhân hóa từ lịch sử khách (nếu có) — chèn vào prompt. */
+function profileBlock(profile?: string | null): string {
+  return profile
+    ? `\n\n=== KHẨU VỊ KHÁCH (cá nhân hóa, do hệ thống tổng hợp) ===\n${profile}\nKhi phù hợp, ưu tiên gợi ý hợp khẩu vị này và nhắc khéo "lần trước bạn hay chọn…". KHÔNG ép buộc.`
+    : "";
+}
+
+export function buildSystemPrompt(bowl: BowlContext, profile?: string | null): string {
   return `Bạn là trợ lý tư vấn dinh dưỡng thân thiện của quán Poke Hanoi. Trả lời NGẮN GỌN bằng tiếng Việt.
 
 NHIỆM VỤ: giúp khách tự build poke bowl cân bằng theo mục tiêu calo. Gợi ý món nên thêm/bớt, giải thích thiếu/dư chất gì.
@@ -58,7 +65,7 @@ QUY TẮC BẮT BUỘC:
 ${buildMenuContext()}
 
 === TRẠNG THÁI BOWL CỦA KHÁCH ===
-${describeBowl(bowl)}`;
+${describeBowl(bowl)}${profileBlock(profile)}`;
 }
 
 /** Prompt insight kinh doanh cho admin — bơm số liệu thật, AI chỉ diễn giải. */
@@ -88,10 +95,10 @@ export function buildAdminInsightPrompt(a: Analytics): string {
 Trả về đúng cấu trúc yêu cầu: headline, observations (3-4 quan sát), actions (tối đa 3 đề xuất). Đề xuất phải cụ thể, khả thi cho quán nhỏ.`;
 }
 
-export function buildAnalyzePrompt(bowl: BowlContext): string {
+export function buildAnalyzePrompt(bowl: BowlContext, profile?: string | null): string {
   return `Phân tích độ cân bằng dinh dưỡng của bowl dưới đây và gợi ý tối đa 4 món NÊN THÊM (chỉ chọn từ menu, ưu tiên lấp chỗ thiếu xơ/đạm/rau xanh, tránh vượt calo mục tiêu nhiều).
 
-${describeBowl(bowl)}
+${describeBowl(bowl)}${profileBlock(profile)}
 
 === MENU CHỌN ĐƯỢC ===
 ${buildMenuContext()}

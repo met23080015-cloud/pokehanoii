@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import { getItemGroup } from "@/lib/menu";
 import { evaluateBalance } from "@/lib/nutrition";
+import { getSupabaseClient } from "@/lib/supabase/client";
 import type { AnalyzeResult } from "@/lib/ai/schema";
 
 export default function ReviewCard() {
@@ -19,15 +20,26 @@ export default function ReviewCard() {
     let active = true;
     setLoading(true);
     setAiFailed(false);
-    fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ selection, totals, target: calorieTarget }),
-    })
-      .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data: AnalyzeResult) => active && setAi(data))
-      .catch(() => active && setAiFailed(true))
-      .finally(() => active && setLoading(false));
+    (async () => {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      // Gắn token nếu khách đã đăng nhập → AI phân tích cá nhân hóa theo lịch sử.
+      const { data: sess } = (await getSupabaseClient()?.auth.getSession()) ?? { data: { session: null } };
+      if (sess.session) headers.Authorization = `Bearer ${sess.session.access_token}`;
+      try {
+        const r = await fetch("/api/analyze", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({ selection, totals, target: calorieTarget }),
+        });
+        if (!r.ok) throw new Error();
+        const data: AnalyzeResult = await r.json();
+        if (active) setAi(data);
+      } catch {
+        if (active) setAiFailed(true);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
     return () => {
       active = false;
     };

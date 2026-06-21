@@ -30,8 +30,25 @@ export async function POST(req: Request) {
     );
   }
 
+  // Đọc cấu hình giá (admin sửa được); thiếu thì dùng mặc định menu.json.
+  const supabase = getServerSupabase();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: "Server chưa cấu hình SUPABASE_SERVICE_ROLE_KEY" },
+      { status: 503 },
+    );
+  }
+  const { data: cfg } = await supabase
+    .from("menu_config")
+    .select("base_price, extra_poke_fee")
+    .eq("id", 1)
+    .maybeSingle();
+  const priceConfig = cfg
+    ? { basePrice: cfg.base_price, extraPokeFee: cfg.extra_poke_fee }
+    : undefined;
+
   // NGUỒN CHÂN LÝ: server tự tính lại totals, không tin client.
-  const totals = computeTotals(selection);
+  const totals = computeTotals(selection, priceConfig);
   if (totals.price <= 0) {
     return NextResponse.json({ error: "Đơn trống" }, { status: 400 });
   }
@@ -47,14 +64,6 @@ export async function POST(req: Request) {
         kcal: Math.round((it?.kcal ?? 0) * (qty as number)),
       };
     });
-
-  const supabase = getServerSupabase();
-  if (!supabase) {
-    return NextResponse.json(
-      { error: "Server chưa cấu hình SUPABASE_SERVICE_ROLE_KEY" },
-      { status: 503 },
-    );
-  }
 
   // Khách đăng nhập (tùy chọn): xác thực JWT → gắn user_id để tích điểm + lịch sử
   let userId: string | null = null;

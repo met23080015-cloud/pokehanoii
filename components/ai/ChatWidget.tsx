@@ -1,8 +1,9 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
+import { getSupabaseClient } from "@/lib/supabase/client";
 
 /**
  * Render tin nhắn AI: GIỮ in đậm **...** ở điểm nhấn, dọn các markdown thừa
@@ -33,12 +34,21 @@ function renderAssistant(content: string): React.ReactNode {
 
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
+  const [token, setToken] = useState<string | undefined>();
   const { selection, totals, calorieTarget } = useBowl();
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
     useChat({ api: "/api/chat" });
 
+  // Lấy token phiên (nếu khách đã đăng nhập) để AI cá nhân hóa theo lịch sử.
+  useEffect(() => {
+    getSupabaseClient()
+      ?.auth.getSession()
+      .then(({ data }) => setToken(data.session?.access_token));
+  }, []);
+
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     handleSubmit(e, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       body: { bowl: { selection, totals, target: calorieTarget } },
     });
   };

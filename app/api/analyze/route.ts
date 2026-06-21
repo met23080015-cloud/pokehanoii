@@ -5,6 +5,7 @@ import { analyzeSchema } from "@/lib/ai/schema";
 import { buildAnalyzePrompt, type BowlContext } from "@/lib/ai/prompt";
 import { rateLimit, clientKey } from "@/lib/ai/rate-limit";
 import { computeTotals } from "@/lib/nutrition";
+import { customerProfile } from "@/lib/ai/profile";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -31,11 +32,13 @@ export async function POST(req: Request) {
     totals: computeTotals(bowl?.selection ?? {}),
   };
 
+  const profile = await customerProfile(req);
+
   try {
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: analyzeSchema,
-      prompt: buildAnalyzePrompt(safeBowl),
+      prompt: buildAnalyzePrompt(safeBowl, profile),
       temperature: 0.3,
     });
     return NextResponse.json(object);

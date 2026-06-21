@@ -3,6 +3,7 @@ import { streamText, type CoreMessage } from "ai";
 import { buildSystemPrompt, type BowlContext } from "@/lib/ai/prompt";
 import { rateLimit, clientKey } from "@/lib/ai/rate-limit";
 import { computeTotals } from "@/lib/nutrition";
+import { customerProfile } from "@/lib/ai/profile";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -32,9 +33,12 @@ export async function POST(req: Request) {
     totals: computeTotals(body.bowl?.selection ?? {}),
   };
 
+  // Cá nhân hóa (tùy chọn): nếu khách đã đăng nhập → tóm tắt khẩu vị từ lịch sử.
+  const profile = await customerProfile(req);
+
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: buildSystemPrompt(safeBowl),
+    system: buildSystemPrompt(safeBowl, profile),
     messages,
     temperature: 0.5,
   });
