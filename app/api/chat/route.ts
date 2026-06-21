@@ -2,6 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { streamText, type CoreMessage } from "ai";
 import { buildSystemPrompt, type BowlContext } from "@/lib/ai/prompt";
 import { rateLimit, clientKey } from "@/lib/ai/rate-limit";
+import { computeTotals } from "@/lib/nutrition";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -23,9 +24,17 @@ export async function POST(req: Request) {
 
   const messages = Array.isArray(body.messages) ? body.messages.slice(-12) : [];
 
+  // NGUỒN CHÂN LÝ: tính lại totals server-side (không tin số client gửi) + tránh
+  // crash khi body thiếu totals.
+  const safeBowl: BowlContext = {
+    selection: body.bowl?.selection ?? {},
+    target: body.bowl?.target ?? 0,
+    totals: computeTotals(body.bowl?.selection ?? {}),
+  };
+
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: buildSystemPrompt(body.bowl),
+    system: buildSystemPrompt(safeBowl),
     messages,
     temperature: 0.5,
   });

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { computeTotals } from "@/lib/nutrition";
-import { getItem } from "@/lib/menu";
+import { getItem, getItemGroup } from "@/lib/menu";
 import type { CreateOrderPayload, OrderLineItem } from "@/lib/supabase/types";
 
 export async function POST(req: Request) {
@@ -17,6 +17,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Thiếu selection" }, { status: 400 });
   }
   const payMethod = body.pay_method === "vietqr" ? "vietqr" : "counter";
+
+  // Đơn hợp lệ phải có ít nhất 1 lớp nền (basePrice luôn được cộng nên không thể
+  // dựa vào price > 0 để bắt đơn rỗng — phải kiểm tra có món thật).
+  const hasBase = Object.entries(selection).some(
+    ([id, qty]) => (qty || 0) > 0 && getItemGroup(id) === "bases",
+  );
+  if (!hasBase) {
+    return NextResponse.json(
+      { error: "Cần chọn ít nhất 1 lớp nền" },
+      { status: 400 },
+    );
+  }
 
   // NGUỒN CHÂN LÝ: server tự tính lại totals, không tin client.
   const totals = computeTotals(selection);
