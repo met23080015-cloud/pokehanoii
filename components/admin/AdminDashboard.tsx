@@ -102,14 +102,17 @@ export default function AdminDashboard() {
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-500" />
         {ready ? `${orders.length} đơn đang xử lý` : "Đang tải…"} · cập nhật realtime
       </p>
-      {orders.length === 0 && ready && (
+      {orders.length === 0 && ready ? (
         <p className="rounded-2xl border border-dashed border-black/10 bg-white p-10 text-center text-ink/40">
           Chưa có đơn nào.
         </p>
+      ) : (
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          {orders.map((o) => (
+            <OrderCard key={o.id} order={o} onStatus={updateStatus} onPaid={setPaid} />
+          ))}
+        </div>
       )}
-      {orders.map((o) => (
-        <OrderCard key={o.id} order={o} onStatus={updateStatus} onPaid={setPaid} />
-      ))}
     </div>
   );
 }

@@ -83,7 +83,7 @@ export default function KitchenView() {
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-500" />
         🍳 {ready ? `${orders.length} đơn đang chờ` : "Đang tải…"} · chuông khi có đơn mới
       </p>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {orders.map((o) => (
           <div
             key={o.id}

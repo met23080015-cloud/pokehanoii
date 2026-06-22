@@ -85,6 +85,7 @@ export default function AnalyticsView() {
 
       <AiInsight />
 
+      <div className="grid gap-4 lg:grid-cols-2">
       <Card title="Món bán chạy">
         {a.topItems.map((it) => (
           <Bar key={it.id} label={it.vi} value={it.qty} max={maxItem} suffix={`${it.qty}`} />
@@ -97,6 +98,7 @@ export default function AnalyticsView() {
         ))}
       </Card>
 
+      <div className="lg:col-span-2">
       <Card title="Thanh toán & giờ cao điểm">
         <p className="text-sm text-ink/70">
           Tại quầy <b>{a.payMix.counter}</b> · VietQR <b>{a.payMix.vietqr}</b>
@@ -110,6 +112,8 @@ export default function AnalyticsView() {
           ))}
         </div>
       </Card>
+      </div>
+      </div>
     </div>
   );
 }

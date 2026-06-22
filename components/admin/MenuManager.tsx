@@ -60,7 +60,7 @@ export default function MenuManager() {
       {(Object.keys(groups) as GroupKey[]).map((g) => (
         <section key={g}>
           <h2 className="mb-2 text-sm font-bold text-ink/70">{GROUP_LABELS[g]}</h2>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {groups[g].map((it) => {
               const isOff = off.has(it.id);
               return (
