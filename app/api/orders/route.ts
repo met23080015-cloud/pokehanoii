@@ -80,33 +80,40 @@ export async function POST(req: Request) {
     userId = u.user?.id ?? null;
   }
 
-  const { data, error } = await supabase
-    .from("orders")
-    .insert({
-      table_no: body.table_no ?? null,
-      user_id: userId,
-      items,
-      total_kcal: totals.kcal,
-      total_protein: totals.protein,
-      total_fat: totals.fat,
-      total_fiber: totals.fiber,
-      total_price: totals.price,
-      pay_method: payMethod,
-      status: "pending",
-    })
-    .select("id, order_token")
-    .single();
+  // Trừ kho + tạo đơn ATOMIC qua RPC (chống oversell/race). Nguyên liệu hết → lỗi OUT_OF_STOCK.
+  const { data, error } = await supabase.rpc("place_order", {
+    p_items: items,
+    p_table_no: body.table_no ?? null,
+    p_user_id: userId,
+    p_total_kcal: totals.kcal,
+    p_total_protein: totals.protein,
+    p_total_fat: totals.fat,
+    p_total_fiber: totals.fiber,
+    p_total_price: totals.price,
+    p_pay_method: payMethod,
+    p_size: size,
+  });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error.message || "";
+    if (msg.includes("OUT_OF_STOCK:")) {
+      const ten = msg.split("OUT_OF_STOCK:")[1]?.trim() || "Nguyên liệu";
+      return NextResponse.json(
+        { error: `Xin lỗi, ${ten} đã hết phần phục vụ hôm nay — vui lòng chọn món khác.` },
+        { status: 409 },
+      );
+    }
+    return NextResponse.json({ error: msg || "Không tạo được đơn" }, { status: 500 });
   }
+
+  const res = data as { id: string; order_token: string };
 
   // Điểm loyalty được cộng tự động qua DB trigger khi staff xác nhận "đã thanh toán"
   // (xem migration 0004) — không cộng ở đây để tránh farm đơn chưa trả.
 
   return NextResponse.json({
-    id: data.id,
-    order_token: data.order_token,
+    id: res.id,
+    order_token: res.order_token,
     totals,
     pay_method: payMethod,
   });

@@ -6,6 +6,7 @@ const LINKS = [
   { href: "/admin", label: "Đơn hàng" },
   { href: "/admin/kitchen", label: "Bếp" },
   { href: "/admin/menu", label: "Thực đơn" },
+  { href: "/admin/inventory", label: "Tồn kho" },
   { href: "/admin/analytics", label: "Thống kê" },
 ];
 

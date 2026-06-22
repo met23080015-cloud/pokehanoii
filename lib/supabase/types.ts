@@ -46,6 +46,28 @@ export interface ServiceRequest {
   created_at: string;
 }
 
+/** Tồn kho BOM. */
+export interface Ingredient {
+  id: string;
+  name_vi: string;
+  unit: string;
+}
+export interface Recipe {
+  item_id: string;
+  ingredient_id: string;
+  qty_per_unit: number;
+}
+export interface IngredientStock {
+  ingredient_id: string;
+  date: string;
+  remaining: number;
+}
+export interface IngredientQuota {
+  ingredient_id: string;
+  weekday: number; // 0=CN..6=T7
+  quota_amount: number;
+}
+
 /** Payload client gửi lên /api/orders (server tính lại totals từ selection). */
 export interface CreateOrderPayload {
   table_no: number | null;
