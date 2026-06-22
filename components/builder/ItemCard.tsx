@@ -1,6 +1,6 @@
 "use client";
 
-import type { MenuItem } from "@/lib/menu";
+import { getItemGroup, type MenuItem } from "@/lib/menu";
 import { formatVND } from "@/lib/nutrition";
 
 interface Props {
@@ -14,6 +14,8 @@ interface Props {
 
 export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Props) {
   const selected = qty > 0;
+  // Đồ uống đo bằng ml; món còn lại đo bằng gram.
+  const measureUnit = getItemGroup(item.id) === "drinks" ? "ml" : "g";
 
   return (
     <div
@@ -51,7 +53,7 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-ink/55">
         <span className="font-medium">
-          {item.kcal ?? 0} kcal{item.grams ? ` · ${item.grams}g` : ""}
+          {item.kcal ?? 0} kcal{item.grams ? ` · ${item.grams}${measureUnit}` : ""}
         </span>
         {item.price ? (
           <span className="rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700">
