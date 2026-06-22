@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { MAX_TABLE } from "@/lib/tables";
+import { useT } from "@/lib/i18n";
 
 export default function QrPage() {
+  const t = useT();
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
 
@@ -18,31 +20,35 @@ export default function QrPage() {
 
   return (
     <main className="mx-auto max-w-3xl p-4">
-      <h1 className="text-xl font-extrabold tracking-tight text-brand-700">Mã QR theo bàn</h1>
-      <p className="mb-4 text-sm text-ink/55">
-        Mỗi mã trỏ tới trang order kèm số bàn (<code className="rounded bg-sand px-1">/?table=N</code>). In ra và dán lên
-        bàn. Quét bằng camera điện thoại để kiểm tra.
-      </p>
+      <h1 className="text-xl font-extrabold tracking-tight text-brand-700">{t("admin.qrTitle")}</h1>
+      <p
+        className="mb-4 text-sm text-ink/55"
+        dangerouslySetInnerHTML={{
+          __html: t("admin.qrHint", {
+            code: '<code class="rounded bg-sand px-1">/?table=N</code>',
+          }),
+        }}
+      />
 
       {!origin ? (
-        <p className="text-ink/40">Đang tạo mã…</p>
+        <p className="text-ink/40">{t("admin.qrGenerating")}</p>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
-          {tables.map((t) => (
+          {tables.map((tbl) => (
             <div
-              key={t}
+              key={tbl}
               className="flex flex-col items-center gap-1.5 rounded-2xl border border-black/5 bg-white p-3 shadow-soft"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrUrl(t)} alt={`QR bàn ${t}`} className="h-40 w-40" />
-              <span className="font-bold">Bàn {t}</span>
+              <img src={qrUrl(tbl)} alt={t("admin.qrTableAlt", { table: tbl })} className="h-40 w-40" />
+              <span className="font-bold">{t("admin.qrTableLabel", { table: tbl })}</span>
               <a
-                href={qrUrl(t)}
+                href={qrUrl(tbl)}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-semibold text-brand-700 underline"
               >
-                Tải / mở ảnh
+                {t("admin.qrOpenImage")}
               </a>
             </div>
           ))}

@@ -1,19 +1,21 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-
-const LINKS = [
-  { href: "/admin", label: "Đơn hàng" },
-  { href: "/admin/kitchen", label: "Bếp" },
-  { href: "/admin/menu", label: "Thực đơn" },
-  { href: "/admin/inventory", label: "Tồn kho" },
-  { href: "/admin/analytics", label: "Thống kê" },
-];
+import { useT } from "@/lib/i18n";
+import LanguageToggle from "@/components/i18n/LanguageToggle";
 
 export default function AdminNav() {
   const path = usePathname();
+  const t = useT();
+  const LINKS = [
+    { href: "/admin", label: t("admin.navOrders") },
+    { href: "/admin/kitchen", label: t("admin.navKitchen") },
+    { href: "/admin/menu", label: t("admin.navMenu") },
+    { href: "/admin/inventory", label: t("admin.navInventory") },
+    { href: "/admin/analytics", label: t("admin.navAnalytics") },
+  ];
   return (
-    <nav className="flex gap-1 rounded-full bg-white p-1 shadow-soft">
+    <nav className="flex items-center gap-1 rounded-full bg-white p-1 shadow-soft">
       {LINKS.map((l) => {
         const active = l.href === "/admin" ? path === "/admin" : path.startsWith(l.href);
         return (
@@ -28,6 +30,7 @@ export default function AdminNav() {
           </a>
         );
       })}
+      <LanguageToggle className="ml-1" />
     </nav>
   );
 }

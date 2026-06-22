@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/lib/i18n";
 import type { PayMethod } from "@/lib/supabase/types";
 
 export default function PaymentChoice({
@@ -9,9 +10,10 @@ export default function PaymentChoice({
   value: PayMethod;
   onChange: (m: PayMethod) => void;
 }) {
+  const t = useT();
   const opts: { id: PayMethod; label: string; desc: string }[] = [
-    { id: "counter", label: "Trả tại quầy", desc: "Mang số đơn ra quầy thanh toán" },
-    { id: "vietqr", label: "Chuyển khoản VietQR", desc: "Quét mã QR chuyển khoản ngay" },
+    { id: "counter", label: t("checkout.payCounter"), desc: t("checkout.payCounterDesc") },
+    { id: "vietqr", label: t("checkout.payVietQR"), desc: t("checkout.payVietQRDesc") },
   ];
   return (
     <div className="grid grid-cols-2 gap-2.5">

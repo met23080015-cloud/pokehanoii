@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { computeAnalytics, type Analytics } from "@/lib/analytics";
 import { formatVND } from "@/lib/nutrition";
+import { getItem, itemName } from "@/lib/menu";
+import { useT, useLang } from "@/lib/i18n";
 import type { Order } from "@/lib/supabase/types";
 import AiInsight from "./AiInsight";
 import ExportButton from "./ExportButton";
@@ -39,6 +41,8 @@ function Bar({ label, value, max, suffix }: { label: string; value: number; max:
 }
 
 export default function AnalyticsView() {
+  const t = useT();
+  const { lang } = useLang();
   const supabase = getSupabaseClient();
   const [a, setA] = useState<Analytics | null>(null);
 
@@ -58,11 +62,11 @@ export default function AnalyticsView() {
     };
   }, [supabase]);
 
-  if (!a) return <p className="p-6 text-center text-ink/40">Đang tải số liệu…</p>;
+  if (!a) return <p className="p-6 text-center text-ink/40">{t("admin.loadingData")}</p>;
   if (a.summary.orderCount === 0)
     return (
       <p className="rounded-2xl border border-dashed border-black/10 bg-white p-10 text-center text-ink/40">
-        Chưa có đơn nào để thống kê.
+        {t("admin.noOrdersStats")}
       </p>
     );
 
@@ -77,35 +81,56 @@ export default function AnalyticsView() {
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        <Kpi label="Doanh thu đã thu" value={formatVND(a.summary.revenue)} />
-        <Kpi label="Đơn / đã trả" value={`${a.summary.orderCount} / ${a.summary.paidCount}`} />
-        <Kpi label="Giá trị TB/đơn" value={formatVND(a.summary.avgOrderValue)} />
-        <Kpi label="Calo TB/đơn" value={`${a.summary.avgKcal} kcal`} />
+        <Kpi label={t("admin.kpiRevenue")} value={formatVND(a.summary.revenue)} />
+        <Kpi
+          label={t("admin.kpiOrdersPaid")}
+          value={`${a.summary.orderCount} / ${a.summary.paidCount}`}
+        />
+        <Kpi label={t("admin.kpiAvgOrder")} value={formatVND(a.summary.avgOrderValue)} />
+        <Kpi
+          label={t("admin.kpiAvgKcal")}
+          value={t("admin.kpiAvgKcalValue", { kcal: a.summary.avgKcal })}
+        />
       </div>
 
       <AiInsight />
 
       <div className="grid gap-4 lg:grid-cols-2">
-      <Card title="Món bán chạy">
-        {a.topItems.map((it) => (
-          <Bar key={it.id} label={it.vi} value={it.qty} max={maxItem} suffix={`${it.qty}`} />
-        ))}
+      <Card title={t("admin.cardTopItems")}>
+        {a.topItems.map((it) => {
+          const m = getItem(it.id);
+          return (
+            <Bar
+              key={it.id}
+              label={m ? itemName(m, lang) : it.vi}
+              value={it.qty}
+              max={maxItem}
+              suffix={`${it.qty}`}
+            />
+          );
+        })}
       </Card>
 
-      <Card title="Doanh thu theo ngày">
+      <Card title={t("admin.cardRevenueByDay")}>
         {a.revenueByDay.map((d) => (
           <Bar key={d.day} label={d.day.slice(5)} value={d.revenue} max={maxDay} suffix={formatVND(d.revenue)} />
         ))}
       </Card>
 
       <div className="lg:col-span-2">
-      <Card title="Thanh toán & giờ cao điểm">
-        <p className="text-sm text-ink/70">
-          Tại quầy <b>{a.payMix.counter}</b> · VietQR <b>{a.payMix.vietqr}</b>
-        </p>
+      <Card title={t("admin.cardPayPeak")}>
+        <p
+          className="text-sm text-ink/70"
+          dangerouslySetInnerHTML={{
+            __html: t("admin.payMixLine", {
+              counter: a.payMix.counter,
+              vietqr: a.payMix.vietqr,
+            }),
+          }}
+        />
         <div className="mt-2 flex items-end gap-0.5">
           {a.peakHours.map((c, h) => (
-            <div key={h} className="flex-1" title={`${h}h: ${c} đơn`}>
+            <div key={h} className="flex-1" title={t("admin.hourTitle", { hour: h, count: c })}>
               <div className="rounded-t bg-brand-400" style={{ height: `${(c / maxHour) * 48 + 2}px` }} />
               {h % 6 === 0 && <p className="mt-0.5 text-center text-[9px] text-ink/40">{h}h</p>}
             </div>

@@ -52,15 +52,27 @@ function profileBlock(profile?: string | null): string {
     : "";
 }
 
-export function buildSystemPrompt(bowl: BowlContext, profile?: string | null): string {
-  return `Bạn là trợ lý tư vấn dinh dưỡng thân thiện của quán Poke Hanoi. Trả lời NGẮN GỌN bằng tiếng Việt.
+/** Chỉ thị ngôn ngữ ở CUỐI prompt (nhấn mạnh recency) khi lang="en". */
+function langDirective(lang: "vi" | "en"): string {
+  return lang === "en"
+    ? "\n\n=== LANGUAGE (CRITICAL) ===\nReply ENTIRELY in English — this overrides every Vietnamese instruction/example above. If a tool returns Vietnamese item names, use the ENGLISH names from the menu above instead. Keep all other rules."
+    : "";
+}
+
+export function buildSystemPrompt(
+  bowl: BowlContext,
+  profile?: string | null,
+  lang: "vi" | "en" = "vi",
+): string {
+  const en = lang === "en";
+  return `${en ? "LANGUAGE: You MUST reply ENTIRELY in English. The Vietnamese text below is instructions/examples — follow them but WRITE YOUR ANSWER IN ENGLISH.\n\n" : ""}Bạn là trợ lý tư vấn dinh dưỡng thân thiện của quán Poke Hanoi. Trả lời NGẮN GỌN bằng ${en ? "tiếng Anh (English)" : "tiếng Việt"}.
 
 NHIỆM VỤ: giúp khách tự build poke bowl cân bằng theo mục tiêu calo. Gợi ý món nên thêm/bớt, giải thích thiếu/dư chất gì.
 
 QUY TẮC BẮT BUỘC:
 - CHỈ dùng số liệu dinh dưỡng được cung cấp dưới đây. TUYỆT ĐỐI KHÔNG tự bịa con số calo/đạm/béo/xơ.
 - CHỈ gợi ý món có trong menu dưới đây. KHÔNG tự thêm món thay khách — khách sẽ tự bấm chọn.
-- Khi nhắc tới món, LUÔN dùng TÊN TIẾNG VIỆT (ví dụ "Bạch tuộc", "Cá ngừ"). TUYỆT ĐỐI KHÔNG hiển thị id kỹ thuật (ví dụ "poke-octopus").
+- Khi nhắc tới món, dùng ${en ? "TÊN TIẾNG ANH của món như ghi trong menu (phần trong ngoặc), ví dụ \"Octopus\", \"Tuna\"" : 'TÊN TIẾNG VIỆT (ví dụ "Bạch tuộc", "Cá ngừ")'}. TUYỆT ĐỐI KHÔNG hiển thị id kỹ thuật (ví dụ "poke-octopus").
 - IN ĐẬM bằng cách đặt **...** quanh các ĐIỂM QUAN TRỌNG: tên món được gợi ý và số liệu chính (calo, gram đạm). Ví dụ: "Thêm **Cá ngừ** (**12g đạm**)". Chỉ in đậm điểm nhấn, đừng in đậm cả câu.
 - KHÔNG dùng loại markdown nào khác: không tiêu đề (#), không bảng, không dấu backtick. Nếu liệt kê thì dùng "- " hoặc "1. " đơn giản.
 - Ngắn gọn, đi thẳng vấn đề, giọng thân thiện.
@@ -79,7 +91,7 @@ TỐI ƯU THEO NGÂN SÁCH / CALO / ĐẠM (QUAN TRỌNG):
 ${buildMenuContext()}
 
 === TRẠNG THÁI BOWL CỦA KHÁCH ===
-${describeBowl(bowl)}${profileBlock(profile)}`;
+${describeBowl(bowl)}${profileBlock(profile)}${langDirective(lang)}`;
 }
 
 /** Prompt insight kinh doanh cho admin — bơm số liệu thật, AI chỉ diễn giải. */
@@ -109,7 +121,15 @@ export function buildAdminInsightPrompt(a: Analytics): string {
 Trả về đúng cấu trúc yêu cầu: headline, observations (3-4 quan sát), actions (tối đa 3 đề xuất). Đề xuất phải cụ thể, khả thi cho quán nhỏ.`;
 }
 
-export function buildAnalyzePrompt(bowl: BowlContext, profile?: string | null): string {
+export function buildAnalyzePrompt(
+  bowl: BowlContext,
+  profile?: string | null,
+  lang: "vi" | "en" = "vi",
+): string {
+  const langNote =
+    lang === "en"
+      ? "\n\nNGÔN NGỮ: Viết summary và gaps HOÀN TOÀN bằng tiếng Anh (English)."
+      : "";
   return `Phân tích độ cân bằng dinh dưỡng của bowl dưới đây và gợi ý tối đa 4 món NÊN THÊM (chỉ chọn từ menu, ưu tiên lấp chỗ thiếu xơ/đạm/rau xanh, tránh vượt calo mục tiêu nhiều).
 
 ${describeBowl(bowl)}${profileBlock(profile)}
@@ -117,5 +137,5 @@ ${describeBowl(bowl)}${profileBlock(profile)}
 === MENU CHỌN ĐƯỢC ===
 ${buildMenuContext()}
 
-Chỉ dùng số liệu trên, không bịa. Trả về đúng cấu trúc yêu cầu.`;
+Chỉ dùng số liệu trên, không bịa. Trả về đúng cấu trúc yêu cầu.${langNote}`;
 }

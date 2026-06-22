@@ -1,7 +1,8 @@
 "use client";
 
-import { getItemGroup, type MenuItem } from "@/lib/menu";
+import { getItemGroup, itemName, type MenuItem } from "@/lib/menu";
 import { formatVND } from "@/lib/nutrition";
+import { useT, useLang } from "@/lib/i18n";
 
 interface Props {
   item: MenuItem;
@@ -13,9 +14,14 @@ interface Props {
 }
 
 export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Props) {
+  const t = useT();
+  const { lang } = useLang();
   const selected = qty > 0;
   // Đồ uống đo bằng ml; món còn lại đo bằng gram.
   const measureUnit = getItemGroup(item.id) === "drinks" ? "ml" : "g";
+  // Tên chính theo ngôn ngữ đang chọn; dòng phụ là tên ngôn ngữ còn lại.
+  const primary = itemName(item, lang);
+  const secondary = lang === "en" ? item.vi : item.en;
 
   return (
     <div
@@ -41,14 +47,14 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={item.image}
-              alt={item.vi}
+              alt={primary}
               loading="lazy"
               className="h-20 w-full object-cover"
             />
           </div>
         )}
-        <span className="font-semibold leading-tight text-ink">{item.vi}</span>
-        <span className="text-[11px] text-ink/40">{item.en}</span>
+        <span className="font-semibold leading-tight text-ink">{primary}</span>
+        <span className="text-[11px] text-ink/40">{secondary}</span>
       </button>
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-ink/55">
@@ -68,13 +74,15 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
 
       {mode === "qty" && (
         <div className="mt-1 flex items-center justify-between">
-          <span className="text-[11px] text-ink/50">{item.protein ?? 0}g đạm</span>
+          <span className="text-[11px] text-ink/50">
+            {t("builder.itemProtein", { n: item.protein ?? 0 })}
+          </span>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onDec}
               disabled={qty <= 0}
-              aria-label="Bớt"
+              aria-label={t("builder.decrease")}
               className="press flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-lg leading-none text-ink/70 disabled:opacity-25"
             >
               −
@@ -83,7 +91,7 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
             <button
               type="button"
               onClick={onInc}
-              aria-label="Thêm"
+              aria-label={t("builder.increase")}
               className="press flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-lg leading-none text-white"
             >
               +

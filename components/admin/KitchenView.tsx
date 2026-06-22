@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT, useLang } from "@/lib/i18n";
 import type { Order, OrderStatus } from "@/lib/supabase/types";
 
 /** Tiếng chuông ngắn khi có đơn mới (Web Audio — không cần file asset). */
@@ -25,6 +26,8 @@ function beep() {
 
 /** Màn hình bếp (KDS): đơn đang làm realtime, chuông khi có đơn mới, nút lớn. */
 export default function KitchenView() {
+  const t = useT();
+  const { lang } = useLang();
   const [orders, setOrders] = useState<Order[]>([]);
   const [ready, setReady] = useState(false);
   const supabase = getSupabaseClient();
@@ -75,13 +78,18 @@ export default function KitchenView() {
     if (error) setOrders(snap);
   }
 
-  if (!supabase) return <p className="text-sm text-amber-700">Supabase chưa cấu hình.</p>;
+  if (!supabase)
+    return <p className="text-sm text-amber-700">{t("admin.supabaseMissing")}</p>;
 
   return (
     <div>
       <p className="mb-3 flex items-center gap-2 text-sm text-ink/55">
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-500" />
-        🍳 {ready ? `${orders.length} đơn đang chờ` : "Đang tải…"} · chuông khi có đơn mới
+        🍳{" "}
+        {ready
+          ? t("admin.ordersWaiting", { count: orders.length })
+          : t("admin.loadingShort")}{" "}
+        · {t("admin.newOrderBell")}
       </p>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {orders.map((o) => (
@@ -93,10 +101,15 @@ export default function KitchenView() {
           >
             <div className="flex items-center justify-between">
               <span className="text-lg font-extrabold text-ink">
-                {o.table_no != null ? `Bàn ${o.table_no}` : "Mang đi"}
+                {o.table_no != null
+                  ? `${t("common.table")} ${o.table_no}`
+                  : t("admin.takeaway")}
               </span>
               <span className="text-xs text-ink/40">
-                {new Date(o.created_at).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                {new Date(o.created_at).toLocaleTimeString(lang === "en" ? "en-GB" : "vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
               </span>
             </div>
             <ul className="mt-2 text-base text-ink/85">
@@ -114,7 +127,7 @@ export default function KitchenView() {
                   onClick={() => setStatus(o.id, "accepted")}
                   className="press rounded-xl bg-brand-600 px-5 py-2.5 font-bold text-white"
                 >
-                  Nhận làm
+                  {t("admin.take")}
                 </button>
               )}
               {o.status === "accepted" && (
@@ -123,7 +136,7 @@ export default function KitchenView() {
                   onClick={() => setStatus(o.id, "done")}
                   className="press rounded-xl bg-ink px-5 py-2.5 font-bold text-white"
                 >
-                  Xong ✓
+                  {t("admin.kitchenDone")}
                 </button>
               )}
             </div>
@@ -131,7 +144,7 @@ export default function KitchenView() {
         ))}
         {orders.length === 0 && ready && (
           <p className="col-span-full rounded-2xl border border-dashed border-black/10 p-10 text-center text-ink/40">
-            Chưa có đơn nào.
+            {t("admin.noOrders")}
           </p>
         )}
       </div>

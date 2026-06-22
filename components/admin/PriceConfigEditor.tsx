@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { formatVND } from "@/lib/nutrition";
+import { useT } from "@/lib/i18n";
 
 /** Sửa giá bán (basePrice + phụ phí đạm) — áp dụng realtime cho builder khách. */
 export default function PriceConfigEditor() {
+  const t = useT();
   const supabase = getSupabaseClient();
   const [base, setBase] = useState<number | "">("");
   const [extra, setExtra] = useState<number | "">("");
@@ -41,7 +43,7 @@ export default function PriceConfigEditor() {
       .eq("id", 1);
     setSaving(false);
     if (error) {
-      alert("Lưu thất bại — phiên đăng nhập có thể đã hết hạn.");
+      alert(t("admin.saveFailed"));
       return;
     }
     setSaved(true);
@@ -53,10 +55,10 @@ export default function PriceConfigEditor() {
 
   return (
     <section className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
-      <h2 className="mb-2 text-sm font-bold text-ink/70">Giá bán</h2>
+      <h2 className="mb-2 text-sm font-bold text-ink/70">{t("admin.priceTitle")}</h2>
       <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">
-          <span className="text-ink/55">Giá cơ bản / bát (đ)</span>
+          <span className="text-ink/55">{t("admin.priceBaseLabel")}</span>
           <input
             type="number"
             value={base}
@@ -65,7 +67,7 @@ export default function PriceConfigEditor() {
           />
         </label>
         <label className="text-sm">
-          <span className="text-ink/55">Phụ phí mỗi muỗng đạm thêm (đ)</span>
+          <span className="text-ink/55">{t("admin.priceExtraLabel")}</span>
           <input
             type="number"
             value={extra}
@@ -79,12 +81,12 @@ export default function PriceConfigEditor() {
           disabled={saving || base === "" || extra === ""}
           className="press rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-50"
         >
-          {saving ? "Đang lưu…" : saved ? "✓ Đã lưu" : "Lưu giá"}
+          {saving ? t("admin.priceSaving") : saved ? t("admin.priceSaved") : t("admin.priceSave")}
         </button>
       </div>
       <p className="mt-2 text-xs text-ink/40">
-        Đổi giá áp dụng ngay cho builder của khách (realtime).
-        {base !== "" && ` Hiện tại: ${formatVND(Number(base))}/bát.`}
+        {t("admin.priceNote")}
+        {base !== "" && t("admin.priceCurrent", { price: formatVND(Number(base)) })}
       </p>
     </section>
   );

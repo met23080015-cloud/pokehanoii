@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
+import { useT } from "@/lib/i18n";
 import {
   getFavorites,
   getRecent,
@@ -13,6 +14,7 @@ import {
 
 export default function FavoritesBar() {
   const { selection, calorieTarget, totals, loadSelection } = useBowl();
+  const t = useT();
   const [favs, setFavs] = useState<SavedBowl[]>([]);
   const [recent, setRecent_] = useState<RecentBowl | null>(null);
 
@@ -24,7 +26,7 @@ export default function FavoritesBar() {
   const hasSelection = totals.kcal > 0;
 
   function save() {
-    const name = window.prompt("Đặt tên cho bát này:");
+    const name = window.prompt(t("builder.namePrompt"));
     if (!name?.trim()) return;
     saveFavorite({ name: name.trim(), selection, target: calorieTarget });
     setFavs(getFavorites());
@@ -46,7 +48,7 @@ export default function FavoritesBar() {
             onClick={() => loadSelection(recent.selection, recent.target)}
             className="press rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-700"
           >
-            ↺ Đặt lại đơn gần nhất
+            {t("builder.reorderLast")}
           </button>
         )}
         {hasSelection && (
@@ -55,14 +57,14 @@ export default function FavoritesBar() {
             onClick={save}
             className="press rounded-full bg-white px-3 py-1 text-sm font-semibold text-ink/65 shadow-soft"
           >
-            ☆ Lưu bát này
+            {t("builder.saveBowl")}
           </button>
         )}
       </div>
 
       {favs.length > 0 && (
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs font-medium text-ink/45">Bát đã lưu:</span>
+          <span className="text-xs font-medium text-ink/45">{t("builder.savedBowls")}</span>
           {favs.map((f) => (
             <span
               key={f.name}
@@ -78,7 +80,7 @@ export default function FavoritesBar() {
               <button
                 type="button"
                 onClick={() => del(f.name)}
-                aria-label="Xóa"
+                aria-label={t("builder.delete")}
                 className="text-ink/30 hover:text-red-500"
               >
                 ✕

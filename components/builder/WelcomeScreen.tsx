@@ -5,17 +5,19 @@ import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/brand/Logo";
 import { useBowl } from "@/lib/store/bowl";
 import { MAX_TABLE, isValidTable } from "@/lib/tables";
+import { useT } from "@/lib/i18n";
+import LanguageToggle from "@/components/i18n/LanguageToggle";
 import QuickActions from "./QuickActions";
 
 // TODO: thay bằng địa chỉ thật của quán
 const STORE_NAME = "Poke Hanoi";
 const STORE_AREA = "Hà Nội";
 
-function greeting(hour: number) {
-  if (hour < 11) return "Chào buổi sáng";
-  if (hour < 14) return "Chúc bạn ngon miệng";
-  if (hour < 18) return "Chào buổi chiều";
-  return "Chào buổi tối";
+function greetingKey(hour: number) {
+  if (hour < 11) return "welcome.greetMorning";
+  if (hour < 14) return "welcome.greetLunch";
+  if (hour < 18) return "welcome.greetAfternoon";
+  return "welcome.greetEvening";
 }
 
 /**
@@ -30,6 +32,7 @@ export default function WelcomeScreen({
   onStart: () => void;
 }) {
   const router = useRouter();
+  const t = useT();
   const { setTable } = useBowl();
   const [tbl, setTbl] = useState("");
   const [tblErr, setTblErr] = useState("");
@@ -37,13 +40,13 @@ export default function WelcomeScreen({
   // Tính giờ sau khi mount để tránh lệch hydration (server UTC vs client local)
   const [hour, setHour] = useState<number | null>(null);
   useEffect(() => setHour(new Date().getHours()), []);
-  const greet = hour == null ? "Xin chào" : greeting(hour);
+  const greet = hour == null ? t("welcome.greetDefault") : t(greetingKey(hour));
 
   function confirmTable(e: React.FormEvent) {
     e.preventDefault();
     const n = parseInt(tbl, 10);
     if (!isValidTable(n)) {
-      setTblErr(`Quán chỉ có bàn 1–${MAX_TABLE}. Vui lòng kiểm tra lại.`);
+      setTblErr(t("welcome.tableError", { max: MAX_TABLE }));
       return;
     }
     setTblErr("");
@@ -70,23 +73,24 @@ export default function WelcomeScreen({
               </p>
             </div>
           </div>
-          <a
-            href="/account"
-            aria-label="Tài khoản"
-            className="press flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg backdrop-blur"
-          >
-            👤
-          </a>
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <a
+              href="/account"
+              aria-label={t("common.account")}
+              className="press flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-lg backdrop-blur"
+            >
+              👤
+            </a>
+          </div>
         </div>
 
         <div className="relative mt-9">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-white/70">
-            Thực đơn điện tử
+            {t("welcome.menuLabel")}
           </p>
-          <h1 className="mt-0.5 text-2xl font-extrabold leading-tight">
-            Poke bowl
-            <br />
-            theo mục tiêu calo
+          <h1 className="mt-0.5 whitespace-pre-line text-2xl font-extrabold leading-tight">
+            {t("welcome.heroTitle")}
           </h1>
         </div>
       </section>
@@ -96,16 +100,14 @@ export default function WelcomeScreen({
         <p className="text-base font-bold text-ink">👋 {greet}!</p>
         {tableNo != null ? (
           <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-ink/60">
-            Món sẽ được phục vụ tại
+            {t("welcome.servedAt")}
             <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-bold text-brand-700">
-              Bàn {tableNo}
+              {t("common.table")} {tableNo}
             </span>
           </p>
         ) : (
           <div className="mt-1.5">
-            <p className="text-sm text-ink/60">
-              Bạn đang ngồi bàn số mấy? Nhập để nhân viên phục vụ đúng chỗ:
-            </p>
+            <p className="text-sm text-ink/60">{t("welcome.askTable")}</p>
             <form onSubmit={confirmTable} className="mt-2 flex gap-2">
               <input
                 inputMode="numeric"
@@ -115,7 +117,7 @@ export default function WelcomeScreen({
                   setTbl(e.target.value.replace(/\D/g, "").slice(0, 2));
                   if (tblErr) setTblErr("");
                 }}
-                placeholder={`Bàn 1–${MAX_TABLE}`}
+                placeholder={t("welcome.tablePlaceholder", { max: MAX_TABLE })}
                 className="w-24 rounded-xl border border-black/10 bg-sand px-3 py-2 text-sm font-semibold focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
               />
               <button
@@ -123,15 +125,13 @@ export default function WelcomeScreen({
                 disabled={!tbl.trim()}
                 className="press rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"
               >
-                Xác nhận
+                {t("common.confirm")}
               </button>
             </form>
             {tblErr ? (
               <p className="mt-1.5 text-xs font-semibold text-red-500">{tblErr}</p>
             ) : (
-              <p className="mt-1.5 text-xs text-ink/40">
-                Hoặc xem thực đơn trước, chọn bàn sau cũng được.
-              </p>
+              <p className="mt-1.5 text-xs text-ink/40">{t("welcome.orLater")}</p>
             )}
           </div>
         )}
@@ -146,9 +146,7 @@ export default function WelcomeScreen({
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-lg">
             🎁
           </span>
-          <span className="text-sm font-semibold text-ink">
-            Đăng nhập để tích điểm
-          </span>
+          <span className="text-sm font-semibold text-ink">{t("welcome.loginEarn")}</span>
         </span>
         <span className="text-lg text-ink/30">›</span>
       </a>
@@ -163,11 +161,9 @@ export default function WelcomeScreen({
           onClick={onStart}
           className="press w-full rounded-2xl bg-brand-600 py-4 text-base font-bold text-white shadow-soft hover:bg-brand-700"
         >
-          Xem thực đơn – Gọi món →
+          {t("welcome.cta")}
         </button>
-        <p className="mt-3 text-center text-xs text-ink/40">
-          Cảm ơn bạn đã ghé Poke Hanoi 💚
-        </p>
+        <p className="mt-3 text-center text-xs text-ink/40">{t("welcome.thanks")}</p>
       </div>
     </main>
   );

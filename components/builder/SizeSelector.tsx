@@ -3,24 +3,26 @@
 import { useBowl } from "@/lib/store/bowl";
 import { formatVND } from "@/lib/nutrition";
 import { pricing } from "@/lib/menu";
+import { useT } from "@/lib/i18n";
 
 /** Chọn cỡ bát: Vừa (Regular) hoặc Extra Poke (+phụ phí, thêm 1 phần đạm). */
 export default function SizeSelector() {
   const { size, setSize, config } = useBowl();
+  const t = useT();
   const base = config?.basePrice ?? pricing.basePrice;
   const extra = config?.extraPokeFee ?? pricing.extraPokeFee;
 
   const options = [
     {
       key: "regular" as const,
-      title: "Bát vừa (Regular)",
-      desc: "Khẩu phần tiêu chuẩn",
+      title: t("builder.sizeRegularTitle"),
+      desc: t("builder.sizeRegularDesc"),
       price: formatVND(base),
     },
     {
       key: "extra" as const,
-      title: "Bát Extra Poke",
-      desc: "Thêm 1 phần đạm",
+      title: t("builder.sizeExtraTitle"),
+      desc: t("builder.sizeExtraDesc"),
       price: `+ ${formatVND(extra)}`,
     },
   ];
@@ -32,8 +34,8 @@ export default function SizeSelector() {
           ★
         </span>
         <div>
-          <h2 className="text-base font-bold tracking-tight">Cỡ bát</h2>
-          <p className="text-xs text-ink/50">Giá cơ bản đã gồm 1 phần đạm.</p>
+          <h2 className="text-base font-bold tracking-tight">{t("builder.sizeTitle")}</h2>
+          <p className="text-xs text-ink/50">{t("builder.sizeHint")}</p>
         </div>
       </div>
 

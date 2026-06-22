@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT } from "@/lib/i18n";
 import type { InsightResult } from "@/lib/ai/schema";
 
 /** Khối AI insight kinh doanh (P3) — gọi /api/ai/insight với token staff. */
 export default function AiInsight() {
+  const t = useT();
   const supabase = getSupabaseClient();
   const [data, setData] = useState<InsightResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -22,10 +24,10 @@ export default function AiInsight() {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!r.ok) throw new Error((await r.json()).error || "Lỗi tạo insight");
+      if (!r.ok) throw new Error((await r.json()).error || t("admin.aiError"));
       setData(await r.json());
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Lỗi");
+      setErr(e instanceof Error ? e.message : t("admin.aiErrorShort"));
     }
     setLoading(false);
   }
@@ -33,14 +35,18 @@ export default function AiInsight() {
   return (
     <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-4">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-bold text-brand-700">🤖 Nhận định AI</p>
+        <p className="text-sm font-bold text-brand-700">{t("admin.aiTitle")}</p>
         <button
           type="button"
           onClick={run}
           disabled={loading}
           className="press shrink-0 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white disabled:opacity-50"
         >
-          {loading ? "Đang phân tích…" : data ? "Phân tích lại" : "Tạo nhận định"}
+          {loading
+            ? t("admin.aiAnalyzing")
+            : data
+              ? t("admin.aiReanalyze")
+              : t("admin.aiGenerate")}
         </button>
       </div>
       {err && <p className="mt-2 text-sm text-red-600">{err}</p>}

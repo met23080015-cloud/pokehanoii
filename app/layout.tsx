@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
+import { cookies } from "next/headers";
+import { I18nProvider, type Lang } from "@/lib/i18n";
 import "./globals.css";
 
 const beVietnam = Be_Vietnam_Pro({
@@ -22,15 +24,16 @@ export const viewport: Viewport = {
   themeColor: "#0E7264",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const lang: Lang = (await cookies()).get("lang")?.value === "en" ? "en" : "vi";
   return (
-    <html lang="vi" className={beVietnam.variable}>
+    <html lang={lang} className={beVietnam.variable}>
       <body className="min-h-[100dvh] bg-sand font-sans text-ink antialiased">
-        {children}
+        <I18nProvider initial={lang}>{children}</I18nProvider>
       </body>
     </html>
   );

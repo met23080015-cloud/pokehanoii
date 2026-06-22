@@ -1,10 +1,11 @@
 "use client";
 
 import type { DietFilter } from "@/lib/menu";
+import { useT } from "@/lib/i18n";
 
-const OPTIONS: { id: DietFilter; label: string }[] = [
-  { id: "vegan", label: "🌱 Món chay" },
-  { id: "no-seafood", label: "🚫🦐 Không hải sản" },
+const OPTIONS: { id: DietFilter; labelKey: string }[] = [
+  { id: "vegan", labelKey: "builder.filterVegan" },
+  { id: "no-seafood", labelKey: "builder.filterNoSeafood" },
 ];
 
 export default function DietaryFilter({
@@ -14,12 +15,13 @@ export default function DietaryFilter({
   value: DietFilter[];
   onChange: (v: DietFilter[]) => void;
 }) {
+  const t = useT();
   const toggle = (id: DietFilter) =>
     onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-xs font-medium text-ink/45">Lọc:</span>
+      <span className="text-xs font-medium text-ink/45">{t("builder.filterLabel")}</span>
       {OPTIONS.map((o) => (
         <button
           key={o.id}
@@ -31,7 +33,7 @@ export default function DietaryFilter({
               : "bg-white text-ink/65 shadow-soft"
           }`}
         >
-          {o.label}
+          {t(o.labelKey)}
         </button>
       ))}
     </div>

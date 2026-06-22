@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
-import { getItemGroup } from "@/lib/menu";
+import { getItem, getItemGroup, itemName } from "@/lib/menu";
 import { evaluateBalance } from "@/lib/nutrition";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { AnalyzeResult } from "@/lib/ai/schema";
+import { useT, useLang } from "@/lib/i18n";
 
 export default function ReviewCard() {
+  const t = useT();
+  const { lang } = useLang();
   const { selection, totals, calorieTarget, size, setQty, toggle, selectSingle } = useBowl();
   const [ai, setAi] = useState<AnalyzeResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -29,7 +32,7 @@ export default function ReviewCard() {
         const r = await fetch("/api/analyze", {
           method: "POST",
           headers,
-          body: JSON.stringify({ selection, totals, target: calorieTarget, size }),
+          body: JSON.stringify({ selection, totals, target: calorieTarget, size, lang }),
         });
         if (!r.ok) throw new Error();
         const data: AnalyzeResult = await r.json();
@@ -44,7 +47,7 @@ export default function ReviewCard() {
       active = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [lang]);
 
   function addSuggestion(itemId: string) {
     const g = getItemGroup(itemId);
@@ -61,7 +64,7 @@ export default function ReviewCard() {
     <div className="rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-4 shadow-soft">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-1.5 font-bold tracking-tight">
-          <span>🤖</span> AI phân tích dinh dưỡng
+          <span>🤖</span> {t("ai.reviewTitle")}
         </h3>
         <span className="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-brand-700 shadow-soft tabular-nums">
           {score}
@@ -88,32 +91,33 @@ export default function ReviewCard() {
           ))}
         </ul>
       ) : (
-        !loading && <p className="mt-2 text-sm font-medium text-brand-700">Bát khá cân bằng 👍</p>
+        !loading && <p className="mt-2 text-sm font-medium text-brand-700">{t("ai.balanced")}</p>
       )}
 
       {ai?.suggestions && ai.suggestions.length > 0 && (
         <div className="mt-3">
-          <p className="mb-1.5 text-xs font-semibold text-ink/45">Gợi ý thêm</p>
+          <p className="mb-1.5 text-xs font-semibold text-ink/45">{t("ai.suggestMore")}</p>
           <div className="flex flex-wrap gap-2">
-            {ai.suggestions.map((s) => (
-              <button
-                key={s.itemId}
-                type="button"
-                onClick={() => addSuggestion(s.itemId)}
-                title={s.reason}
-                className="press rounded-full border border-brand-500 bg-white px-3 py-1.5 text-sm font-semibold text-brand-700"
-              >
-                + {s.vi}
-              </button>
-            ))}
+            {ai.suggestions.map((s) => {
+              const it = getItem(s.itemId);
+              return (
+                <button
+                  key={s.itemId}
+                  type="button"
+                  onClick={() => addSuggestion(s.itemId)}
+                  title={s.reason}
+                  className="press rounded-full border border-brand-500 bg-white px-3 py-1.5 text-sm font-semibold text-brand-700"
+                >
+                  + {it ? itemName(it, lang) : s.vi}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {aiFailed && (
-        <p className="mt-2 text-xs text-ink/40">
-          (AI chưa sẵn sàng — đang hiển thị phân tích cơ bản từ hệ thống.)
-        </p>
+        <p className="mt-2 text-xs text-ink/40">{t("ai.aiNotReady")}</p>
       )}
     </div>
   );

@@ -2,12 +2,13 @@
 
 import {
   groups,
-  GROUP_LABELS,
+  groupLabel,
   isHiddenByDiet,
   type GroupKey,
   type DietFilter,
 } from "@/lib/menu";
 import { useBowl } from "@/lib/store/bowl";
+import { useLang } from "@/lib/i18n";
 import ItemCard from "./ItemCard";
 
 interface Props {
@@ -28,6 +29,7 @@ export default function GroupStep({
   unavailable,
 }: Props) {
   const { selection, toggle, setQty, selectSingle } = useBowl();
+  const { lang } = useLang();
   const items = groups[groupKey].filter(
     (it) => !isHiddenByDiet(it, diet) && !unavailable?.has(it.id),
   );
@@ -41,7 +43,7 @@ export default function GroupStep({
           {step}
         </span>
         <div>
-          <h2 className="text-base font-bold tracking-tight">{GROUP_LABELS[groupKey]}</h2>
+          <h2 className="text-base font-bold tracking-tight">{groupLabel(groupKey, lang)}</h2>
           {help && <p className="text-xs text-ink/50">{help}</p>}
         </div>
       </div>

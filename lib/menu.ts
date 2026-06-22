@@ -72,6 +72,26 @@ export const GROUP_LABELS: Record<GroupKey, string> = {
   drinks: "Đồ uống (Drinks)",
 };
 
+/** Nhãn nhóm tiếng Anh — song song GROUP_LABELS, chọn theo ngôn ngữ. */
+export const GROUP_LABELS_EN: Record<GroupKey, string> = {
+  bases: "Base",
+  proteins: "Protein (Poke)",
+  mixins: "Mix-ins",
+  sauces: "Sauce",
+  toppings: "Toppings",
+  crisps: "Crisps",
+  drinks: "Drinks",
+};
+
+export function groupLabel(group: GroupKey, lang: "vi" | "en"): string {
+  return (lang === "en" ? GROUP_LABELS_EN : GROUP_LABELS)[group];
+}
+
+/** Tên món theo ngôn ngữ (menu.json đã có sẵn cả vi/en). */
+export function itemName(item: Pick<MenuItem, "vi" | "en">, lang: "vi" | "en"): string {
+  return lang === "en" ? item.en : item.vi;
+}
+
 // id -> { item, group } index for O(1) lookup
 const index = new Map<string, { item: MenuItem; group: GroupKey }>();
 (Object.keys(groups) as GroupKey[]).forEach((group) => {

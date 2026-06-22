@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
-import { groups, GROUP_LABELS, type GroupKey } from "@/lib/menu";
+import { groups, groupLabel, itemName, type GroupKey } from "@/lib/menu";
+import { useT, useLang } from "@/lib/i18n";
 
 /** Auto-86: bật/tắt món hết hàng. Tắt → builder của khách ẩn ngay (realtime). */
 export default function MenuManager() {
+  const t = useT();
+  const { lang } = useLang();
   const supabase = getSupabaseClient();
   const [off, setOff] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string | null>(null);
@@ -43,23 +46,24 @@ export default function MenuManager() {
       : await supabase.from("menu_unavailable").insert({ item_id: id });
     if (res.error) {
       setOff(off); // rollback
-      alert("Cập nhật thất bại — phiên đăng nhập có thể đã hết hạn.");
+      alert(t("admin.updateFailedShort"));
     }
     setBusy(null);
   }
 
   if (!supabase) {
-    return <p className="text-sm text-amber-700">Supabase chưa cấu hình.</p>;
+    return <p className="text-sm text-amber-700">{t("admin.supabaseMissing")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-sm text-ink/55">
-        Tắt món tạm hết hàng — builder của khách sẽ ẩn món đó <b>ngay lập tức</b>.
-      </p>
+      <p
+        className="text-sm text-ink/55"
+        dangerouslySetInnerHTML={{ __html: t("admin.menuHint") }}
+      />
       {(Object.keys(groups) as GroupKey[]).map((g) => (
         <section key={g}>
-          <h2 className="mb-2 text-sm font-bold text-ink/70">{GROUP_LABELS[g]}</h2>
+          <h2 className="mb-2 text-sm font-bold text-ink/70">{groupLabel(g, lang)}</h2>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {groups[g].map((it) => {
               const isOff = off.has(it.id);
@@ -74,14 +78,14 @@ export default function MenuManager() {
                   }`}
                 >
                   <span className={isOff ? "text-ink/40 line-through" : "font-medium text-ink"}>
-                    {it.vi}
+                    {itemName(it, lang)}
                   </span>
                   <span
                     className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                       isOff ? "bg-red-100 text-red-600" : "bg-brand-100 text-brand-700"
                     }`}
                   >
-                    {isOff ? "Hết" : "Còn"}
+                    {isOff ? t("admin.itemOut") : t("admin.itemIn")}
                   </span>
                 </button>
               );

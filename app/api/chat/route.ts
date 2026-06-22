@@ -11,13 +11,20 @@ import { getUnavailableIds } from "@/lib/ai/inventory-server";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-/** Gọn lại cho AI: chỉ tên món + cỡ + tổng (KHÔNG lộ id kỹ thuật). */
-function trimBowl(b: SuggestedBowl | null) {
+/** Gọn lại cho AI: tên món theo ngôn ngữ + cỡ + tổng (KHÔNG lộ id kỹ thuật). */
+function trimBowl(b: SuggestedBowl | null, lang: "vi" | "en") {
   if (!b) return null;
   const t = b.totals;
+  const en = lang === "en";
   return {
-    items: b.items,
-    size: b.size === "extra" ? "Extra Poke (thêm 1 phần đạm)" : "Vừa (Regular)",
+    items: b.items.map((it) => ({ name: en ? it.en : it.vi, qty: it.qty })),
+    size: en
+      ? b.size === "extra"
+        ? "Extra Poke (extra protein)"
+        : "Regular"
+      : b.size === "extra"
+        ? "Extra Poke (thêm 1 phần đạm)"
+        : "Vừa (Regular)",
     kcal: t.kcal,
     protein: t.protein,
     fat: t.fat,
@@ -34,7 +41,7 @@ export async function POST(req: Request) {
     return new Response("Quá nhiều yêu cầu, thử lại sau.", { status: 429 });
   }
 
-  let body: { messages: CoreMessage[]; bowl: BowlContext };
+  let body: { messages: CoreMessage[]; bowl: BowlContext; lang?: "vi" | "en" };
   try {
     body = await req.json();
   } catch {
@@ -55,6 +62,8 @@ export async function POST(req: Request) {
     size,
     totals: computeTotals(body.bowl?.selection ?? {}, undefined, size),
   };
+
+  const lang = body.lang === "en" ? "en" : "vi";
 
   // Cá nhân hóa (tùy chọn): nếu khách đã đăng nhập → tóm tắt khẩu vị từ lịch sử.
   const profile = await customerProfile(req);
@@ -85,16 +94,16 @@ export async function POST(req: Request) {
       return {
         feasible: r.feasible,
         params: r.params,
-        bowl: trimBowl(r.bowl),
-        goalMin: trimBowl(r.goalMin),
-        nearest: trimBowl(r.nearest),
+        bowl: trimBowl(r.bowl, lang),
+        goalMin: trimBowl(r.goalMin, lang),
+        nearest: trimBowl(r.nearest, lang),
       };
     },
   });
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: buildSystemPrompt(safeBowl, profile),
+    system: buildSystemPrompt(safeBowl, profile, lang),
     messages,
     temperature: 0.5,
     tools: { suggestBowl: suggestBowlTool },

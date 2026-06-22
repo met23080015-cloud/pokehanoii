@@ -19,7 +19,7 @@ export interface SuggestParams {
 export interface SuggestedBowl {
   selection: Selection;
   size: BowlSize;
-  items: { vi: string; qty: number }[];
+  items: { vi: string; en: string; qty: number }[];
   totals: Totals;
 }
 
@@ -39,10 +39,13 @@ export interface SuggestResult {
 
 const MAX_FILLERS = 8; // chặn nhồi quá nhiều topping miễn phí
 
-function describe(sel: Selection): { vi: string; qty: number }[] {
+function describe(sel: Selection): { vi: string; en: string; qty: number }[] {
   return Object.entries(sel)
     .filter(([, q]) => (q || 0) > 0)
-    .map(([id, q]) => ({ vi: getItem(id)?.vi ?? id, qty: q }));
+    .map(([id, q]) => {
+      const it = getItem(id);
+      return { vi: it?.vi ?? id, en: it?.en ?? id, qty: q };
+    });
 }
 
 /**

@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { useEffect, useRef, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT, useLang } from "@/lib/i18n";
 
 /**
  * Render tin nhắn AI: GIỮ in đậm **...** ở điểm nhấn, dọn các markdown thừa
@@ -33,6 +34,8 @@ function renderAssistant(content: string): React.ReactNode {
 }
 
 export default function ChatWidget() {
+  const t = useT();
+  const { lang } = useLang();
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | undefined>();
   const { selection, totals, calorieTarget, size } = useBowl();
@@ -49,7 +52,7 @@ export default function ChatWidget() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     handleSubmit(e, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      body: { bowl: { selection, totals, target: calorieTarget, size } },
+      body: { bowl: { selection, totals, target: calorieTarget, size }, lang },
     });
   };
 
@@ -121,7 +124,7 @@ export default function ChatWidget() {
         onPointerUp={fabUp}
         style={fabPos ? { left: fabPos.x, top: fabPos.y, right: "auto", bottom: "auto" } : undefined}
         className="press fixed bottom-28 right-4 z-40 flex h-14 w-14 cursor-move touch-none select-none items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-bar sm:bottom-6"
-        aria-label="Tư vấn dinh dưỡng — kéo để di chuyển"
+        aria-label={t("ai.fabLabel")}
       >
         {open ? "✕" : "🤖"}
       </button>
@@ -132,18 +135,15 @@ export default function ChatWidget() {
           className="fade-in fixed z-40 flex h-[60vh] w-[92vw] max-w-sm flex-col overflow-hidden rounded-2xl border border-black/10 bg-white shadow-bar"
         >
           <div className="flex items-center justify-between bg-brand-600 px-4 py-3 text-white">
-            <span className="font-bold">🤖 Tư vấn dinh dưỡng</span>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Đóng">
+            <span className="font-bold">{t("ai.chatTitle")}</span>
+            <button type="button" onClick={() => setOpen(false)} aria-label={t("ai.close")}>
               ✕
             </button>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto p-3 text-sm">
             {messages.length === 0 && (
-              <p className="rounded-2xl bg-sand p-3 text-ink/55">
-                Chào bạn! Hỏi mình cách build bát cân bằng nhé — vd: &quot;1000 calo
-                nhiều đạm ít béo nên ăn gì?&quot;
-              </p>
+              <p className="rounded-2xl bg-sand p-3 text-ink/55">{t("ai.welcome")}</p>
             )}
             {messages.map((m) => (
               <div key={m.id} className={m.role === "user" ? "text-right" : "text-left"}>
@@ -158,10 +158,8 @@ export default function ChatWidget() {
                 </span>
               </div>
             ))}
-            {isLoading && <p className="text-ink/40">Đang soạn…</p>}
-            {error && (
-              <p className="text-red-500">Lỗi: AI chưa sẵn sàng (kiểm tra API key).</p>
-            )}
+            {isLoading && <p className="text-ink/40">{t("ai.typing")}</p>}
+            {error && <p className="text-red-500">{t("ai.errChat")}</p>}
           </div>
 
           <form
@@ -171,7 +169,7 @@ export default function ChatWidget() {
             <input
               value={input}
               onChange={handleInputChange}
-              placeholder="Nhập câu hỏi…"
+              placeholder={t("ai.inputPlaceholder")}
               className="flex-1 rounded-xl border border-black/10 bg-sand px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
             />
             <button
@@ -179,7 +177,7 @@ export default function ChatWidget() {
               disabled={isLoading || !input.trim()}
               className="press rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"
             >
-              Gửi
+              {t("ai.send")}
             </button>
           </form>
         </div>

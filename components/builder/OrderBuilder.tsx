@@ -6,6 +6,8 @@ import type { PayMethod } from "@/lib/supabase/types";
 import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
 import { useUnavailable } from "@/lib/use-unavailable";
 import { setRecent, consumePendingLoad } from "@/lib/favorites";
+import { useT } from "@/lib/i18n";
+import LanguageToggle from "@/components/i18n/LanguageToggle";
 import Logo from "@/components/brand/Logo";
 import WelcomeScreen from "./WelcomeScreen";
 import CalorieTarget from "./CalorieTarget";
@@ -22,6 +24,7 @@ type View = "welcome" | "build" | "checkout" | "confirmed";
 
 export default function OrderBuilder() {
   const { tableNo, reset, selection, calorieTarget, setQty, loadSelection } = useBowl();
+  const t = useT();
   const [view, setView] = useState<View>("welcome");
   const [diet, setDiet] = useState<DietFilter[]>([]);
   const unavailable = useUnavailable();
@@ -102,18 +105,19 @@ export default function OrderBuilder() {
         <div>
           <Logo />
           <p className="mt-0.5 text-xs font-medium text-ink/50">
-            Tự build bát theo mục tiêu calo
+            {t("welcome.subtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {tableNo != null && (
             <span className="rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white shadow-soft">
-              Bàn {tableNo}
+              {t("common.table")} {tableNo}
             </span>
           )}
+          <LanguageToggle />
           <a
             href="/account"
-            aria-label="Tài khoản"
+            aria-label={t("common.account")}
             className="press flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow-soft"
           >
             👤
@@ -125,13 +129,13 @@ export default function OrderBuilder() {
       <CalorieTarget />
       <DietaryFilter value={diet} onChange={applyDiet} />
       <SizeSelector />
-      <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." diet={diet} unavailable={unavailable} />
-      <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." diet={diet} unavailable={unavailable} />
-      <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." diet={diet} unavailable={unavailable} />
-      <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." diet={diet} unavailable={unavailable} />
-      <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." diet={diet} unavailable={unavailable} />
-      <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." diet={diet} unavailable={unavailable} />
-      <GroupStep step={7} groupKey="drinks" mode="qty" help="Đồ uống mát lạnh — tính giá riêng (tùy chọn)." diet={diet} unavailable={unavailable} />
+      <GroupStep step={1} groupKey="bases" mode="single" help={t("builder.helpBases")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={2} groupKey="proteins" mode="qty" help={t("builder.helpProteins")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={3} groupKey="mixins" mode="multi" help={t("builder.helpMixins")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={4} groupKey="sauces" mode="single" help={t("builder.helpSauces")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={5} groupKey="toppings" mode="multi" help={t("builder.helpToppings")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={6} groupKey="crisps" mode="multi" help={t("builder.helpCrisps")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={7} groupKey="drinks" mode="qty" help={t("builder.helpDrinks")} diet={diet} unavailable={unavailable} />
 
       <NutritionSidebar onCheckout={() => setView("checkout")} />
       <ChatWidget />

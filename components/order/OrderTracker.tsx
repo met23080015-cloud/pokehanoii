@@ -4,15 +4,17 @@ import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { formatVND } from "@/lib/nutrition";
 import { LogoMark } from "@/components/brand/Logo";
+import { useT } from "@/lib/i18n";
 import type { Order, OrderStatus } from "@/lib/supabase/types";
 
-const STEPS: { key: OrderStatus; label: string; desc: string }[] = [
-  { key: "pending", label: "Đã gửi", desc: "Đơn đã tới quầy" },
-  { key: "accepted", label: "Đang làm", desc: "Bếp đang chuẩn bị" },
-  { key: "done", label: "Hoàn thành", desc: "Mời bạn nhận món" },
+const STEPS: { key: OrderStatus; labelKey: string; descKey: string }[] = [
+  { key: "pending", labelKey: "order.stepSentLabel", descKey: "order.stepSentDesc" },
+  { key: "accepted", labelKey: "order.stepMakingLabel", descKey: "order.stepMakingDesc" },
+  { key: "done", labelKey: "order.stepDoneLabel", descKey: "order.stepDoneDesc" },
 ];
 
 export default function OrderTracker({ token }: { token: string }) {
+  const t = useT();
   const supabase = getSupabaseClient();
   const [order, setOrder] = useState<Order | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -35,11 +37,11 @@ export default function OrderTracker({ token }: { token: string }) {
     };
   }, [supabase, token]);
 
-  if (!loaded) return <p className="p-6 text-center text-ink/40">Đang tải đơn…</p>;
+  if (!loaded) return <p className="p-6 text-center text-ink/40">{t("order.loading")}</p>;
   if (!order)
     return (
       <div className="rounded-2xl border border-black/5 bg-white p-6 text-center shadow-soft">
-        <p className="text-ink/60">Không tìm thấy đơn này.</p>
+        <p className="text-ink/60">{t("order.notFound")}</p>
       </div>
     );
 
@@ -54,13 +56,13 @@ export default function OrderTracker({ token }: { token: string }) {
         </span>
         {order.table_no != null && (
           <span className="rounded-full bg-brand-600 px-3 py-1 text-sm font-bold text-white">
-            Bàn {order.table_no}
+            {t("order.table")} {order.table_no}
           </span>
         )}
       </header>
 
       <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
-        <p className="text-sm text-ink/55">Mã đơn</p>
+        <p className="text-sm text-ink/55">{t("order.orderCode")}</p>
         <p className="font-mono text-xl font-bold tracking-wider text-brand-700">#{shortId}</p>
 
         {/* timeline */}
@@ -79,9 +81,9 @@ export default function OrderTracker({ token }: { token: string }) {
                 </span>
                 <div>
                   <div className={`font-semibold ${done ? "text-ink" : "text-ink/40"}`}>
-                    {s.label}
+                    {t(s.labelKey)}
                   </div>
-                  <div className="text-xs text-ink/45">{s.desc}</div>
+                  <div className="text-xs text-ink/45">{t(s.descKey)}</div>
                 </div>
               </li>
             );
@@ -90,7 +92,7 @@ export default function OrderTracker({ token }: { token: string }) {
       </div>
 
       <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
-        <h3 className="mb-2 font-bold tracking-tight">Món đã đặt</h3>
+        <h3 className="mb-2 font-bold tracking-tight">{t("order.orderedItems")}</h3>
         <ul className="divide-y divide-black/5 text-sm">
           {order.items.map((it) => (
             <li key={it.id} className="flex justify-between py-1.5">
@@ -103,24 +105,24 @@ export default function OrderTracker({ token }: { token: string }) {
           ))}
         </ul>
         <div className="mt-3 flex justify-between border-t border-black/5 pt-3 font-bold">
-          <span>Tổng</span>
+          <span>{t("order.total")}</span>
           <span>{formatVND(order.total_price)}</span>
         </div>
         <div className="mt-1 flex items-center justify-end gap-2 text-xs">
           <span className="text-ink/45">
-            {order.pay_method === "vietqr" ? "Chuyển khoản VietQR" : "Trả tại quầy"}
+            {order.pay_method === "vietqr" ? t("order.payVietQR") : t("order.payCounter")}
           </span>
           <span
             className={`rounded-full px-2 py-0.5 font-semibold ${
               order.paid ? "bg-brand-100 text-brand-700" : "bg-amber-100 text-amber-700"
             }`}
           >
-            {order.paid ? "✓ Đã thanh toán" : "Chưa thanh toán"}
+            {order.paid ? t("order.paid") : t("order.unpaid")}
           </span>
         </div>
       </div>
 
-      <p className="text-center text-xs text-ink/35">Trang tự cập nhật mỗi vài giây.</p>
+      <p className="text-center text-xs text-ink/35">{t("order.autoRefresh")}</p>
     </div>
   );
 }

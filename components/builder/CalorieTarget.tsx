@@ -1,15 +1,17 @@
 "use client";
 
 import { useBowl } from "@/lib/store/bowl";
+import { useT } from "@/lib/i18n";
 
 const PRESETS = [600, 800, 1000, 1200];
 
 export default function CalorieTarget() {
   const { calorieTarget, setTarget } = useBowl();
+  const t = useT();
 
   return (
     <section className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
-      <h2 className="text-sm font-semibold text-ink/60">Hôm nay bạn muốn ăn</h2>
+      <h2 className="text-sm font-semibold text-ink/60">{t("builder.calorieTitle")}</h2>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         {PRESETS.map((p) => (
           <button
@@ -26,7 +28,7 @@ export default function CalorieTarget() {
           </button>
         ))}
         <label className="ml-auto flex items-center gap-1.5 text-sm text-ink/60">
-          <span>Tùy chỉnh</span>
+          <span>{t("builder.calorieCustom")}</span>
           <input
             type="number"
             min={200}

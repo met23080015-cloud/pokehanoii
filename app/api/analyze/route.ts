@@ -18,12 +18,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Quá nhiều yêu cầu" }, { status: 429 });
   }
 
-  let bowl: BowlContext;
+  let bowl: BowlContext & { lang?: "vi" | "en" };
   try {
-    bowl = (await req.json()) as BowlContext;
+    bowl = (await req.json()) as BowlContext & { lang?: "vi" | "en" };
   } catch {
     return NextResponse.json({ error: "Body không hợp lệ" }, { status: 400 });
   }
+
+  const lang = bowl?.lang === "en" ? "en" : "vi";
 
   // NGUỒN CHÂN LÝ: tính lại totals server-side, không tin số client gửi.
   const size = bowl?.size === "extra" ? "extra" : "regular";
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
     const { object } = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: analyzeSchema,
-      prompt: buildAnalyzePrompt(safeBowl, profile),
+      prompt: buildAnalyzePrompt(safeBowl, profile, lang),
       temperature: 0.3,
     });
     return NextResponse.json(object);

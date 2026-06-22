@@ -2,9 +2,11 @@
 
 import { useBowl } from "@/lib/store/bowl";
 import { formatVND } from "@/lib/nutrition";
+import { useT } from "@/lib/i18n";
 
 export default function NutritionSidebar({ onCheckout }: { onCheckout: () => void }) {
   const { calorieTarget, totals } = useBowl();
+  const t = useT();
   const remaining = calorieTarget - totals.kcal;
   const pct = calorieTarget > 0 ? Math.min(100, (totals.kcal / calorieTarget) * 100) : 0;
   const over = remaining < 0;
@@ -21,7 +23,10 @@ export default function NutritionSidebar({ onCheckout }: { onCheckout: () => voi
             <span
               className={`font-semibold tabular-nums ${over ? "text-red-600" : "text-brand-600"}`}
             >
-              {over ? `Vượt ${Math.abs(remaining)}` : `Còn ${remaining}`} kcal
+              {over
+                ? t("builder.over", { n: Math.abs(remaining) })
+                : t("builder.remaining", { n: remaining })}{" "}
+              kcal
             </span>
           </div>
           <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-sand">
@@ -33,14 +38,14 @@ export default function NutritionSidebar({ onCheckout }: { onCheckout: () => voi
         </div>
 
         <div className="flex justify-between text-xs font-medium text-ink/65">
-          <span>🥩 Đạm {totals.protein}g</span>
-          <span>🧈 Béo {totals.fat}g</span>
-          <span>🥦 Xơ {totals.fiber}g</span>
+          <span>🥩 {t("common.protein")} {totals.protein}g</span>
+          <span>🧈 {t("common.fat")} {totals.fat}g</span>
+          <span>🥦 {t("common.fiber")} {totals.fiber}g</span>
         </div>
 
         <div className="flex items-center justify-between gap-3">
           <div className="leading-tight">
-            <div className="text-[11px] text-ink/45">Tạm tính</div>
+            <div className="text-[11px] text-ink/45">{t("builder.subtotal")}</div>
             <div className="text-xl font-extrabold tracking-tight">
               {formatVND(totals.price)}
             </div>
@@ -51,7 +56,7 @@ export default function NutritionSidebar({ onCheckout }: { onCheckout: () => voi
             disabled={!hasItems}
             className="press rounded-2xl bg-brand-600 px-6 py-3 font-bold text-white shadow-soft disabled:opacity-35"
           >
-            Xem đơn →
+            {t("builder.viewOrder")}
           </button>
         </div>
       </div>

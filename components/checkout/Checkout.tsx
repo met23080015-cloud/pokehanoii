@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import { getItemGroup } from "@/lib/menu";
+import { useT } from "@/lib/i18n";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { PayMethod } from "@/lib/supabase/types";
 import CheckoutSummary from "./CheckoutSummary";
@@ -17,6 +18,7 @@ export default function Checkout({
   onBack: () => void;
   onConfirmed: (orderId: string, payMethod: PayMethod, orderToken?: string) => void;
 }) {
+  const t = useT();
   const { selection, totals, tableNo, size } = useBowl();
   const [payMethod, setPayMethod] = useState<PayMethod>("counter");
   const [submitting, setSubmitting] = useState(false);
@@ -42,12 +44,12 @@ export default function Checkout({
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Không gửi được đơn");
+        setError(data.error || t("checkout.errSubmit"));
         return;
       }
       onConfirmed(data.id, payMethod, data.order_token);
     } catch {
-      setError("Lỗi kết nối, thử lại.");
+      setError(t("checkout.errNetwork"));
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +68,7 @@ export default function Checkout({
         onClick={onBack}
         className="press self-start rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-brand-700 shadow-soft"
       >
-        ← Quay lại chỉnh bát
+        {t("checkout.back")}
       </button>
 
       <CheckoutSummary selection={selection} totals={totals} size={size} editable />
@@ -76,13 +78,13 @@ export default function Checkout({
         onClick={onBack}
         className="press -mt-1 self-start rounded-full border border-brand-500 bg-white px-3.5 py-1.5 text-sm font-semibold text-brand-700"
       >
-        + Thêm món khác
+        {t("checkout.addMore")}
       </button>
 
       <ReviewCard />
 
       <div>
-        <h3 className="mb-2 font-bold tracking-tight">Phương thức thanh toán</h3>
+        <h3 className="mb-2 font-bold tracking-tight">{t("checkout.payMethod")}</h3>
         <PaymentChoice value={payMethod} onChange={setPayMethod} />
       </div>
 
@@ -94,7 +96,7 @@ export default function Checkout({
 
       {!hasBase && (
         <p className="rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-700">
-          Bát cần ít nhất 1 lớp nền — bấm “+ Thêm món khác” để chọn nền.
+          {t("checkout.noBaseWarn")}
         </p>
       )}
 
@@ -104,7 +106,7 @@ export default function Checkout({
         disabled={submitting || !hasBase}
         className="press rounded-2xl bg-brand-600 px-5 py-3.5 font-bold text-white shadow-soft disabled:opacity-50"
       >
-        {submitting ? "Đang gửi..." : "Gửi đơn tới quầy"}
+        {submitting ? t("checkout.submitting") : t("checkout.submit")}
       </button>
     </div>
   );

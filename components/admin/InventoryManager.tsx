@@ -2,14 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT } from "@/lib/i18n";
 import type { Ingredient } from "@/lib/supabase/types";
 
-const WD = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]; // index = weekday 0..6
+// index = weekday 0..6 (CN..T7) → key trong dict
+const WD_KEYS = ["wdSun", "wdMon", "wdTue", "wdWed", "wdThu", "wdFri", "wdSat"] as const;
 const todayDate = () => new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" });
 const todayWeekday = () => new Date(todayDate() + "T00:00:00").getDay();
 
 /** Quản lý tồn kho: hạn mức theo thứ cho từng nguyên liệu + còn-lại-hôm-nay (realtime). */
 export default function InventoryManager() {
+  const t = useT();
+  const WD = WD_KEYS.map((k) => t(`admin.${k}`));
   const supabase = getSupabaseClient();
   const [ings, setIngs] = useState<Ingredient[]>([]);
   const [quota, setQuota] = useState<Record<string, number[]>>({}); // id -> [7]
@@ -73,7 +77,7 @@ export default function InventoryManager() {
     const rows = arr.map((q, wd) => ({ ingredient_id: id, weekday: wd, quota_amount: q }));
     const { error } = await supabase.from("ingredient_quota").upsert(rows);
     setSaving(null);
-    if (error) alert("Lưu thất bại — phiên đăng nhập có thể đã hết hạn.");
+    if (error) alert(t("admin.invSaveFailed"));
   }
 
   async function refill(id: string) {
@@ -82,26 +86,27 @@ export default function InventoryManager() {
     const { error } = await supabase
       .from("ingredient_stock")
       .upsert({ ingredient_id: id, date: todayDate(), remaining: q });
-    if (error) alert("Nạp lại thất bại.");
+    if (error) alert(t("admin.invRefillFailed"));
     else loadStock();
   }
 
-  if (!supabase) return <p className="text-sm text-amber-700">Supabase chưa cấu hình.</p>;
+  if (!supabase)
+    return <p className="text-sm text-amber-700">{t("admin.supabaseMissing")}</p>;
 
   const wdToday = todayWeekday();
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-sm text-ink/55">
-        Hạn mức theo thứ cho từng nguyên liệu. Hôm nay là <b>{WD[wdToday]}</b>. &quot;Còn lại&quot; cập
-        nhật realtime khi có đơn. Hết → mọi món dùng nó tự ẩn ở builder.
-      </p>
+      <p
+        className="text-sm text-ink/55"
+        dangerouslySetInnerHTML={{ __html: t("admin.invHint", { today: WD[wdToday] }) }}
+      />
       <div className="overflow-x-auto rounded-2xl border border-black/5 bg-white shadow-soft">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-ink/50">
-              <th className="px-3 py-2 text-left">Nguyên liệu</th>
-              <th className="px-2 py-2">Còn hôm nay</th>
+              <th className="px-3 py-2 text-left">{t("admin.invColIngredient")}</th>
+              <th className="px-2 py-2">{t("admin.invColToday")}</th>
               {WD.map((d, i) => (
                 <th key={d} className={`px-1 py-2 ${i === wdToday ? "font-bold text-brand-700" : ""}`}>
                   {d}
@@ -138,14 +143,14 @@ export default function InventoryManager() {
                       disabled={saving === ing.id}
                       className="press rounded-lg bg-brand-600 px-2.5 py-1 text-xs font-bold text-white disabled:opacity-50"
                     >
-                      {saving === ing.id ? "..." : "Lưu"}
+                      {saving === ing.id ? "..." : t("common.save")}
                     </button>
                     <button
                       type="button"
                       onClick={() => refill(ing.id)}
                       className="press ml-1 rounded-lg border border-brand-600 px-2.5 py-1 text-xs font-bold text-brand-700"
                     >
-                      Nạp lại
+                      {t("admin.invRefill")}
                     </button>
                   </td>
                 </tr>

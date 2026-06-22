@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT } from "@/lib/i18n";
 import AdminGate from "./AdminGate";
 import AdminDashboard from "./AdminDashboard";
 import AdminNav from "./AdminNav";
@@ -9,6 +10,7 @@ import AdminNav from "./AdminNav";
 type Status = "loading" | "out" | "in";
 
 export default function AdminAuthGate({ children }: { children?: React.ReactNode }) {
+  const t = useT();
   const supabase = getSupabaseClient();
   const [status, setStatus] = useState<Status>("loading");
   const [email, setEmail] = useState("");
@@ -42,22 +44,23 @@ export default function AdminAuthGate({ children }: { children?: React.ReactNode
   }, [status, supabase]);
 
   if (status === "loading" || (status === "in" && isStaff === null))
-    return <p className="p-6 text-center text-ink/40">Đang kiểm tra đăng nhập…</p>;
+    return <p className="p-6 text-center text-ink/40">{t("admin.checkingLogin")}</p>;
 
   if (status === "out") return <AdminGate />;
 
   if (isStaff === false)
     return (
       <div className="flex flex-col items-center gap-3 rounded-2xl border border-amber-300 bg-amber-50 p-6 text-center">
-        <p className="text-sm text-amber-800">
-          Tài khoản <b>{email}</b> chưa được cấp quyền nhân viên.
-        </p>
+        <p
+          className="text-sm text-amber-800"
+          dangerouslySetInnerHTML={{ __html: t("admin.notStaff", { email }) }}
+        />
         <button
           type="button"
           onClick={() => supabase?.auth.signOut()}
           className="press rounded-xl border border-amber-400 px-4 py-2 text-sm font-semibold text-amber-800"
         >
-          Đăng xuất
+          {t("admin.signOut")}
         </button>
       </div>
     );
@@ -71,7 +74,7 @@ export default function AdminAuthGate({ children }: { children?: React.ReactNode
           onClick={() => supabase?.auth.signOut()}
           className="press shrink-0 rounded-full bg-white px-3 py-1 font-semibold text-brand-700 shadow-soft"
         >
-          Đăng xuất
+          {t("admin.signOut")}
         </button>
       </div>
       {children ?? <AdminDashboard />}

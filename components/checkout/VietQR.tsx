@@ -1,6 +1,7 @@
 "use client";
 
 import { formatVND } from "@/lib/nutrition";
+import { useT } from "@/lib/i18n";
 
 export default function VietQR({
   amount,
@@ -9,6 +10,7 @@ export default function VietQR({
   amount: number;
   orderInfo: string;
 }) {
+  const t = useT();
   const bank = process.env.NEXT_PUBLIC_VIETQR_BANK;
   const account = process.env.NEXT_PUBLIC_VIETQR_ACCOUNT;
   const name = process.env.NEXT_PUBLIC_VIETQR_NAME || "";
@@ -16,7 +18,7 @@ export default function VietQR({
   if (!bank || !account) {
     return (
       <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700">
-        Chưa cấu hình tài khoản VietQR (NEXT_PUBLIC_VIETQR_*). Vui lòng trả tại quầy.
+        {t("checkout.vietqrNotConfigured")}
       </div>
     );
   }
@@ -30,8 +32,8 @@ export default function VietQR({
     <div className="flex flex-col items-center gap-2 rounded-2xl border border-neutral-200 bg-white p-4">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={url} alt="VietQR" className="h-60 w-60 object-contain" />
-      <p className="text-sm font-medium">Số tiền: {formatVND(amount)}</p>
-      <p className="text-xs text-neutral-500">Nội dung: {orderInfo}</p>
+      <p className="text-sm font-medium">{t("checkout.vietqrAmount")}: {formatVND(amount)}</p>
+      <p className="text-xs text-neutral-500">{t("checkout.vietqrInfo")}: {orderInfo}</p>
     </div>
   );
 }

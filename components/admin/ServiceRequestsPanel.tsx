@@ -2,16 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { useT } from "@/lib/i18n";
 import type { ServiceRequest } from "@/lib/supabase/types";
 
-const LABEL: Record<string, string> = {
-  service: "🙋 Gọi phục vụ",
-  bill: "🧾 Xin thanh toán",
-  feedback: "💬 Góp ý",
+const LABEL_KEY: Record<string, string> = {
+  service: "admin.svcService",
+  bill: "admin.svcBill",
+  feedback: "admin.svcFeedback",
 };
 
 /** Bảng yêu cầu tại bàn (realtime) — hiện nổi bật trên đầu dashboard admin. */
 export default function ServiceRequestsPanel() {
+  const t = useT();
   const [reqs, setReqs] = useState<ServiceRequest[]>([]);
   const supabase = getSupabaseClient();
 
@@ -74,7 +76,7 @@ export default function ServiceRequestsPanel() {
   return (
     <div className="flex flex-col gap-2 rounded-2xl border border-amber-300 bg-amber-50 p-3">
       <p className="text-sm font-bold text-amber-700">
-        🔔 {reqs.length} yêu cầu từ bàn
+        {t("admin.svcCount", { count: reqs.length })}
       </p>
       {reqs.map((r) => (
         <div
@@ -83,8 +85,8 @@ export default function ServiceRequestsPanel() {
         >
           <div className="min-w-0">
             <p className="text-sm font-semibold text-ink">
-              {r.table_no != null ? `Bàn ${r.table_no}` : "Khách"} ·{" "}
-              {LABEL[r.type] ?? r.type}
+              {r.table_no != null ? `${t("common.table")} ${r.table_no}` : t("admin.guest")} ·{" "}
+              {LABEL_KEY[r.type] ? t(LABEL_KEY[r.type]) : r.type}
             </p>
             {r.note && <p className="truncate text-xs text-ink/55">{r.note}</p>}
           </div>
@@ -93,7 +95,7 @@ export default function ServiceRequestsPanel() {
             onClick={() => resolve(r.id)}
             className="press shrink-0 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white"
           >
-            Đã xử lý
+            {t("admin.svcResolved")}
           </button>
         </div>
       ))}
