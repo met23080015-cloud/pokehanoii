@@ -58,6 +58,44 @@ export default function ChatWidget() {
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const drag = useRef<{ dx: number; dy: number } | null>(null);
 
+  // --- Kéo thả nút robot (FAB) ---
+  const fabRef = useRef<HTMLButtonElement>(null);
+  const [fabPos, setFabPos] = useState<{ x: number; y: number } | null>(null);
+  const fabDrag = useRef<{ ox: number; oy: number; dx: number; dy: number; moved: boolean } | null>(
+    null,
+  );
+
+  function fabDown(e: React.PointerEvent) {
+    if (!fabRef.current) return;
+    const r = fabRef.current.getBoundingClientRect();
+    fabDrag.current = {
+      ox: e.clientX,
+      oy: e.clientY,
+      dx: e.clientX - r.left,
+      dy: e.clientY - r.top,
+      moved: false,
+    };
+    (e.currentTarget as Element).setPointerCapture(e.pointerId);
+  }
+  function fabMove(e: React.PointerEvent) {
+    const d = fabDrag.current;
+    if (!d || !fabRef.current) return;
+    // chỉ tính là kéo khi vượt 6px → tránh nhầm thao tác chạm thành kéo
+    if (!d.moved && Math.hypot(e.clientX - d.ox, e.clientY - d.oy) < 6) return;
+    d.moved = true;
+    const w = fabRef.current.offsetWidth;
+    const h = fabRef.current.offsetHeight;
+    const x = Math.max(8, Math.min(e.clientX - d.dx, window.innerWidth - w - 8));
+    const y = Math.max(8, Math.min(e.clientY - d.dy, window.innerHeight - h - 8));
+    setFabPos({ x, y });
+  }
+  function fabUp() {
+    const moved = fabDrag.current?.moved;
+    fabDrag.current = null;
+    // không di chuyển = chạm → mở/đóng panel
+    if (!moved) (open ? setOpen(false) : openPanel());
+  }
+
   function openPanel() {
     if (!pos) {
       const w = Math.min(384, window.innerWidth * 0.92);
@@ -91,10 +129,14 @@ export default function ChatWidget() {
   return (
     <>
       <button
+        ref={fabRef}
         type="button"
-        onClick={() => (open ? setOpen(false) : openPanel())}
-        className="press fixed bottom-28 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-bar sm:bottom-6"
-        aria-label="Tư vấn dinh dưỡng"
+        onPointerDown={fabDown}
+        onPointerMove={fabMove}
+        onPointerUp={fabUp}
+        style={fabPos ? { left: fabPos.x, top: fabPos.y, right: "auto", bottom: "auto" } : undefined}
+        className="press fixed bottom-28 right-4 z-40 flex h-14 w-14 cursor-move touch-none select-none items-center justify-center rounded-full bg-brand-600 text-2xl text-white shadow-bar sm:bottom-6"
+        aria-label="Tư vấn dinh dưỡng — kéo để di chuyển"
       >
         {open ? "✕" : "🤖"}
       </button>
