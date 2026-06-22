@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useT } from "@/lib/i18n";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
+import NotificationBell from "./NotificationBell";
 
 export default function AdminNav() {
   const path = usePathname();
@@ -31,6 +32,7 @@ export default function AdminNav() {
         );
       })}
       <LanguageToggle className="ml-1" />
+      <NotificationBell />
     </nav>
   );
 }

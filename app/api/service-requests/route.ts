@@ -30,6 +30,37 @@ export async function POST(req: Request) {
     );
   }
 
+  // CHỐNG SPAM (server-side, không cần migration):
+  // (1) Cooldown 30s: cùng bàn + cùng loại vừa gửi trong 30s → chặn.
+  // (2) Chặn trùng đang mở (service/bill): đã có 1 yêu cầu cùng loại CHƯA xử lý
+  //     thì không tạo thêm — tránh dồn "gọi phục vụ" x10 cho 1 bàn.
+  // Feedback bỏ qua (2) vì khách có thể góp ý nhiều nội dung khác nhau.
+  const COOLDOWN_MS = 30_000;
+  const since = new Date(Date.now() - COOLDOWN_MS).toISOString();
+  let recentQuery = supabase
+    .from("service_requests")
+    .select("id, status, created_at")
+    .eq("type", body.type)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  recentQuery =
+    tableNo == null ? recentQuery.is("table_no", null) : recentQuery.eq("table_no", tableNo);
+  const { data: recent } = await recentQuery;
+
+  if (recent && recent.length > 0) {
+    const tooSoon = recent.some((r) => (r.created_at as string) > since);
+    const hasOpen = body.type !== "feedback" && recent.some((r) => r.status === "open");
+    if (tooSoon || hasOpen) {
+      return NextResponse.json(
+        {
+          error: "Yêu cầu đã được ghi nhận, nhân viên đang tới. Vui lòng đợi chút nhé.",
+          code: "RATE_LIMIT",
+        },
+        { status: 429 },
+      );
+    }
+  }
+
   const { error } = await supabase
     .from("service_requests")
     .insert({ table_no: tableNo, type: body.type, note });

@@ -29,7 +29,8 @@ export default function QuickActions({ tableNo }: { tableNo: number }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ table_no: tableNo, type, note: noteText }),
       });
-      if (!r.ok) throw new Error();
+      // 429 = chống spam (đã có yêu cầu đang xử lý) → vẫn coi như đã gửi, không báo lỗi.
+      if (!r.ok && r.status !== 429) throw new Error();
       setDone(type);
       setTimeout(() => setDone((d) => (d === type ? null : d)), 2600);
     } catch {
@@ -55,7 +56,7 @@ export default function QuickActions({ tableNo }: { tableNo: number }) {
               key={tile.type}
               type="button"
               onClick={() => onTile(tile.type)}
-              disabled={isSending}
+              disabled={isSending || isDone}
               className={`press flex flex-col items-center gap-1.5 rounded-2xl border p-3 text-center shadow-soft ${
                 isDone
                   ? "border-brand-200 bg-brand-50"

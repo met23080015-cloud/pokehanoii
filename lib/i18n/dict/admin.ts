@@ -62,6 +62,13 @@ export const admin: Slice = {
       svcCount: "🔔 {count} yêu cầu từ bàn",
       svcResolved: "Đã xử lý",
 
+      // Notification bell
+      notifTitle: "Thông báo",
+      notifEmpty: "Chưa có yêu cầu nào.",
+      justNow: "vừa xong",
+      minAgo: "{n} phút trước",
+      hourAgo: "{n} giờ trước",
+
       // Menu manager
       menuHint:
         "Tắt món tạm hết hàng — builder của khách sẽ ẩn món đó <b>ngay lập tức</b>.",
@@ -201,6 +208,13 @@ export const admin: Slice = {
       svcFeedback: "💬 Feedback",
       svcCount: "🔔 {count} requests from tables",
       svcResolved: "Resolved",
+
+      // Notification bell
+      notifTitle: "Notifications",
+      notifEmpty: "No requests yet.",
+      justNow: "just now",
+      minAgo: "{n} min ago",
+      hourAgo: "{n} h ago",
 
       // Menu manager
       menuHint:
