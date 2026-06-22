@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { computeTotals } from "@/lib/nutrition";
 import { getItem, getItemGroup } from "@/lib/menu";
+import { MAX_TABLE, isValidTable } from "@/lib/tables";
 import type { CreateOrderPayload, OrderLineItem } from "@/lib/supabase/types";
 
 export async function POST(req: Request) {
@@ -18,6 +19,14 @@ export async function POST(req: Request) {
   }
   const payMethod = body.pay_method === "vietqr" ? "vietqr" : "counter";
   const size = body.size === "extra" ? "extra" : "regular";
+
+  // Bàn có thể null (khách chưa chọn) — nhưng nếu có thì phải trong 1..MAX_TABLE.
+  if (body.table_no != null && !isValidTable(body.table_no)) {
+    return NextResponse.json(
+      { error: `Số bàn không hợp lệ (chỉ 1–${MAX_TABLE})` },
+      { status: 400 },
+    );
+  }
 
   // Đơn hợp lệ phải có ít nhất 1 lớp nền (basePrice luôn được cộng nên không thể
   // dựa vào price > 0 để bắt đơn rỗng — phải kiểm tra có món thật).

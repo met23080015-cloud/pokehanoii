@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { MAX_TABLE } from "@/lib/tables";
 
 export default function QrPage() {
   const [origin, setOrigin] = useState("");
   useEffect(() => setOrigin(window.location.origin), []);
 
-  const count = Number(process.env.NEXT_PUBLIC_TABLE_COUNT) || 10;
-  const tables = Array.from({ length: count }, (_, i) => i + 1);
+  const tables = Array.from({ length: MAX_TABLE }, (_, i) => i + 1);
 
   function qrUrl(table: number) {
     const target = `${origin}/?table=${table}`;

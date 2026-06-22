@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/brand/Logo";
 import { useBowl } from "@/lib/store/bowl";
+import { MAX_TABLE, isValidTable } from "@/lib/tables";
 import QuickActions from "./QuickActions";
 
 // TODO: thay bằng địa chỉ thật của quán
@@ -31,6 +32,7 @@ export default function WelcomeScreen({
   const router = useRouter();
   const { setTable } = useBowl();
   const [tbl, setTbl] = useState("");
+  const [tblErr, setTblErr] = useState("");
 
   // Tính giờ sau khi mount để tránh lệch hydration (server UTC vs client local)
   const [hour, setHour] = useState<number | null>(null);
@@ -40,7 +42,11 @@ export default function WelcomeScreen({
   function confirmTable(e: React.FormEvent) {
     e.preventDefault();
     const n = parseInt(tbl, 10);
-    if (n <= 0) return;
+    if (!isValidTable(n)) {
+      setTblErr(`Quán chỉ có bàn 1–${MAX_TABLE}. Vui lòng kiểm tra lại.`);
+      return;
+    }
+    setTblErr("");
     setTable(n); // cập nhật state ngay (UI đổi tức thì)
     router.replace(`/?table=${n}`); // đồng bộ URL để refresh giữ được bàn
   }
@@ -103,9 +109,13 @@ export default function WelcomeScreen({
             <form onSubmit={confirmTable} className="mt-2 flex gap-2">
               <input
                 inputMode="numeric"
+                maxLength={2}
                 value={tbl}
-                onChange={(e) => setTbl(e.target.value.replace(/\D/g, ""))}
-                placeholder="Số bàn"
+                onChange={(e) => {
+                  setTbl(e.target.value.replace(/\D/g, "").slice(0, 2));
+                  if (tblErr) setTblErr("");
+                }}
+                placeholder={`Bàn 1–${MAX_TABLE}`}
                 className="w-24 rounded-xl border border-black/10 bg-sand px-3 py-2 text-sm font-semibold focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
               />
               <button
@@ -116,9 +126,13 @@ export default function WelcomeScreen({
                 Xác nhận
               </button>
             </form>
-            <p className="mt-1.5 text-xs text-ink/40">
-              Hoặc xem thực đơn trước, chọn bàn sau cũng được.
-            </p>
+            {tblErr ? (
+              <p className="mt-1.5 text-xs font-semibold text-red-500">{tblErr}</p>
+            ) : (
+              <p className="mt-1.5 text-xs text-ink/40">
+                Hoặc xem thực đơn trước, chọn bàn sau cũng được.
+              </p>
+            )}
           </div>
         )}
       </section>
