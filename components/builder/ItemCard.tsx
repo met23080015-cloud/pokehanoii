@@ -22,10 +22,21 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
   // Tên chính theo ngôn ngữ đang chọn; dòng phụ là tên ngôn ngữ còn lại.
   const primary = itemName(item, lang);
   const secondary = lang === "en" ? item.vi : item.en;
+  // Bấm vào BẤT KỲ đâu trên thẻ đều chọn/tăng món. qty → +1, còn lại → bật/tắt.
+  const selectAction = () => (mode === "qty" ? onInc() : onToggle());
 
   return (
     <div
-      className={`press relative flex flex-col gap-1 rounded-2xl border p-3 text-left ${
+      role="button"
+      tabIndex={0}
+      onClick={selectAction}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          selectAction();
+        }
+      }}
+      className={`press relative flex cursor-pointer select-none flex-col gap-1 rounded-2xl border p-3 text-left ${
         selected
           ? "border-brand-500 bg-brand-50 shadow-soft"
           : "border-black/5 bg-white hover:border-brand-200"
@@ -37,25 +48,19 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
         </span>
       )}
 
-      <button
-        type="button"
-        onClick={mode === "qty" ? onInc : onToggle}
-        className="flex flex-col gap-0.5 text-left"
-      >
-        {item.image && (
-          <div className="-mx-3 -mt-3 mb-1 overflow-hidden rounded-t-2xl bg-sand">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.image}
-              alt={primary}
-              loading="lazy"
-              className="h-20 w-full object-cover"
-            />
-          </div>
-        )}
-        <span className="font-semibold leading-tight text-ink">{primary}</span>
-        <span className="text-[11px] text-ink/40">{secondary}</span>
-      </button>
+      {item.image && (
+        <div className="-mx-3 -mt-3 mb-1 overflow-hidden rounded-t-2xl bg-sand">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={item.image}
+            alt={primary}
+            loading="lazy"
+            className="pointer-events-none h-20 w-full object-cover"
+          />
+        </div>
+      )}
+      <span className="font-semibold leading-tight text-ink">{primary}</span>
+      <span className="text-[11px] text-ink/40">{secondary}</span>
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-ink/55">
         <span className="font-medium">
@@ -80,7 +85,10 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={onDec}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDec();
+              }}
               disabled={qty <= 0}
               aria-label={t("builder.decrease")}
               className="press flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-lg leading-none text-ink/70 disabled:opacity-25"
@@ -90,7 +98,10 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
             <span className="w-5 text-center font-bold tabular-nums">{qty}</span>
             <button
               type="button"
-              onClick={onInc}
+              onClick={(e) => {
+                e.stopPropagation();
+                onInc();
+              }}
               aria-label={t("builder.increase")}
               className="press flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-lg leading-none text-white"
             >
