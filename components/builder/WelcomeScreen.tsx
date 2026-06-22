@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/brand/Logo";
 import { useBowl } from "@/lib/store/bowl";
-import { MAX_TABLE, isValidTable } from "@/lib/tables";
+import { MAX_TABLE, isValidTable, fetchOccupiedTables } from "@/lib/tables";
 import { useT } from "@/lib/i18n";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import QuickActions from "./QuickActions";
@@ -36,13 +36,15 @@ export default function WelcomeScreen({
   const { setTable } = useBowl();
   const [tbl, setTbl] = useState("");
   const [tblErr, setTblErr] = useState("");
+  const [changing, setChanging] = useState(false); // đang đổi bàn (đã có bàn)
+  const [checking, setChecking] = useState(false); // đang kiểm tra trùng bàn
 
   // Tính giờ sau khi mount để tránh lệch hydration (server UTC vs client local)
   const [hour, setHour] = useState<number | null>(null);
   useEffect(() => setHour(new Date().getHours()), []);
   const greet = hour == null ? t("welcome.greetDefault") : t(greetingKey(hour));
 
-  function confirmTable(e: React.FormEvent) {
+  async function confirmTable(e: React.FormEvent) {
     e.preventDefault();
     const n = parseInt(tbl, 10);
     if (!isValidTable(n)) {
@@ -50,8 +52,21 @@ export default function WelcomeScreen({
       return;
     }
     setTblErr("");
+    // Chọn bàn KHÁC bàn hiện tại → chặn nếu bàn đó đang có đơn (bàn của chính
+    // mình thì bỏ qua kiểm tra để re-confirm không bị khoá).
+    if (n !== tableNo) {
+      setChecking(true);
+      const occupied = await fetchOccupiedTables();
+      setChecking(false);
+      if (occupied.includes(n)) {
+        setTblErr(t("welcome.tableOccupied", { n }));
+        return;
+      }
+    }
     setTable(n); // cập nhật state ngay (UI đổi tức thì)
     router.replace(`/?table=${n}`); // đồng bộ URL để refresh giữ được bàn
+    setChanging(false);
+    setTbl("");
   }
 
   return (
@@ -98,13 +113,26 @@ export default function WelcomeScreen({
       {/* Lời chào + bàn */}
       <section className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
         <p className="text-base font-bold text-ink">👋 {greet}!</p>
-        {tableNo != null ? (
-          <p className="mt-1 flex flex-wrap items-center gap-1.5 text-sm text-ink/60">
-            {t("welcome.servedAt")}
-            <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-bold text-brand-700">
-              {t("common.table")} {tableNo}
-            </span>
-          </p>
+        {tableNo != null && !changing ? (
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <p className="flex flex-wrap items-center gap-1.5 text-sm text-ink/60">
+              {t("welcome.servedAt")}
+              <span className="rounded-full bg-brand-50 px-2.5 py-0.5 text-sm font-bold text-brand-700">
+                {t("common.table")} {tableNo}
+              </span>
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setChanging(true);
+                setTbl("");
+                setTblErr("");
+              }}
+              className="press rounded-full border border-brand-300 px-2.5 py-0.5 text-xs font-semibold text-brand-700"
+            >
+              {t("welcome.changeTable")}
+            </button>
+          </div>
         ) : (
           <div className="mt-1.5">
             <p className="text-sm text-ink/60">{t("welcome.askTable")}</p>
@@ -122,14 +150,25 @@ export default function WelcomeScreen({
               />
               <button
                 type="submit"
-                disabled={!tbl.trim()}
+                disabled={!tbl.trim() || checking}
                 className="press rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"
               >
-                {t("common.confirm")}
+                {checking ? t("welcome.checkingTable") : t("common.confirm")}
               </button>
             </form>
             {tblErr ? (
               <p className="mt-1.5 text-xs font-semibold text-red-500">{tblErr}</p>
+            ) : tableNo != null && changing ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setChanging(false);
+                  setTblErr("");
+                }}
+                className="press mt-1.5 text-xs font-medium text-ink/40 underline"
+              >
+                {t("common.cancel")}
+              </button>
             ) : (
               <p className="mt-1.5 text-xs text-ink/40">{t("welcome.orLater")}</p>
             )}
