@@ -12,6 +12,7 @@ import { groups, type GroupKey } from "@/lib/menu";
 import {
   computeTotals,
   type BowlSize,
+  type PriceConfig,
   type Selection,
   type Totals,
 } from "@/lib/nutrition";
@@ -75,6 +76,7 @@ function reducer(state: BowlState, action: Action): BowlState {
 
 interface BowlContextValue extends BowlState {
   totals: Totals;
+  config: PriceConfig | undefined;
   setTarget: (v: number) => void;
   setTable: (v: number) => void;
   setSize: (v: BowlSize) => void;
@@ -117,6 +119,7 @@ export function BowlProvider({
   const value: BowlContextValue = {
     ...state,
     totals,
+    config,
     setTarget: (value) => dispatch({ type: "setTarget", value }),
     setTable: (value) => dispatch({ type: "setTable", value }),
     setSize: (value) => dispatch({ type: "setSize", value }),

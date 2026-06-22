@@ -1,14 +1,12 @@
 "use client";
 
 import { useBowl } from "@/lib/store/bowl";
-import { useMenuConfig } from "@/lib/use-menu-config";
 import { formatVND } from "@/lib/nutrition";
 import { pricing } from "@/lib/menu";
 
 /** Chọn cỡ bát: Vừa (Regular) hoặc Extra Poke (+phụ phí, thêm 1 phần đạm). */
 export default function SizeSelector() {
-  const { size, setSize } = useBowl();
-  const config = useMenuConfig();
+  const { size, setSize, config } = useBowl();
   const base = config?.basePrice ?? pricing.basePrice;
   const extra = config?.extraPokeFee ?? pricing.extraPokeFee;
 
