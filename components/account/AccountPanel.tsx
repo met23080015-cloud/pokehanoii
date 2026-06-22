@@ -12,6 +12,7 @@ export default function AccountPanel() {
   const supabase = getSupabaseClient();
   const [status, setStatus] = useState<"loading" | "out" | "in">("loading");
   const [email, setEmail] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [points, setPoints] = useState(0);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -42,12 +43,14 @@ export default function AccountPanel() {
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) {
         setStatus("in");
+        setUserEmail(data.session.user.email ?? "");
         loadData(data.session.user.id);
       } else setStatus("out");
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (session) {
         setStatus("in");
+        setUserEmail(session.user.email ?? "");
         loadData(session.user.id);
       } else setStatus("out");
     });
@@ -119,18 +122,20 @@ export default function AccountPanel() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-4 shadow-soft">
-        <div>
-          <p className="text-xs text-ink/50">Điểm thưởng</p>
-          <p className="text-3xl font-extrabold tracking-tight text-brand-700">
-            {points}
-            <span className="text-base text-ink/40"> điểm</span>
+      <div className="flex items-center justify-between gap-3 rounded-2xl border border-brand-100 bg-gradient-to-br from-brand-50 to-white p-4 shadow-soft">
+        <div className="min-w-0">
+          <p className="truncate text-lg font-extrabold tracking-tight text-brand-700">
+            {userEmail.split("@")[0] || "Khách"}
+          </p>
+          <p className="truncate text-xs text-ink/50">{userEmail}</p>
+          <p className="mt-1 text-sm font-semibold text-ink/70">
+            {points} <span className="font-normal text-ink/40">điểm thưởng</span>
           </p>
         </div>
         <button
           type="button"
           onClick={() => supabase?.auth.signOut()}
-          className="press rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-ink/60 shadow-soft"
+          className="press shrink-0 rounded-full bg-white px-3 py-1.5 text-sm font-semibold text-ink/60 shadow-soft"
         >
           Đăng xuất
         </button>
