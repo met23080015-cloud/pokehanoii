@@ -131,6 +131,7 @@ export default function OrderBuilder() {
       <GroupStep step={4} groupKey="sauces" mode="single" help="Chọn 1 loại sốt." diet={diet} unavailable={unavailable} />
       <GroupStep step={5} groupKey="toppings" mode="multi" help="Chọn rau củ ăn kèm." diet={diet} unavailable={unavailable} />
       <GroupStep step={6} groupKey="crisps" mode="multi" help="Rắc thêm đồ giòn." diet={diet} unavailable={unavailable} />
+      <GroupStep step={7} groupKey="drinks" mode="qty" help="Đồ uống mát lạnh — tính giá riêng (tùy chọn)." diet={diet} unavailable={unavailable} />
 
       <NutritionSidebar onCheckout={() => setView("checkout")} />
       <ChatWidget />

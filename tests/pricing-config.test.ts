@@ -50,3 +50,25 @@ describe("computeTotals — cỡ bát Extra Poke", () => {
     expect(computeTotals(regular).price).toBe(computeTotals(regular, undefined, "regular").price);
   });
 });
+
+describe("computeTotals — đồ uống (giá riêng, cộng trên bowl)", () => {
+  const bowl = { "base-brown-rice": 1, "poke-salmon": 1 };
+
+  it("thêm 1 nước ép 45.000đ → tổng = bowl + 45.000đ", () => {
+    const base = computeTotals(bowl).price;
+    const withDrink = computeTotals({ ...bowl, "drink-orange-carrot": 1 }).price;
+    expect(withDrink).toBe(base + 45000);
+  });
+
+  it("2 chai dừa 40.000đ → +80.000đ", () => {
+    const base = computeTotals(bowl).price;
+    const withDrinks = computeTotals({ ...bowl, "drink-coconut": 2 }).price;
+    expect(withDrinks).toBe(base + 80000);
+  });
+
+  it("đồ uống cộng cả calo vào tổng dinh dưỡng", () => {
+    const base = computeTotals(bowl);
+    const withDrink = computeTotals({ ...bowl, "drink-orange-carrot": 1 });
+    expect(withDrink.kcal).toBe(base.kcal + 120);
+  });
+});

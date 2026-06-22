@@ -6,7 +6,8 @@ export type GroupKey =
   | "mixins"
   | "sauces"
   | "toppings"
-  | "crisps";
+  | "crisps"
+  | "drinks";
 
 export interface MenuItem {
   id: string;
@@ -19,6 +20,8 @@ export interface MenuItem {
   fat: number | null;
   fiber: number | null;
   premiumFee?: number;
+  /** Giá bán riêng (đồ uống) — món tính theo giá này, không dùng giá bowl. */
+  price?: number;
   /** Optional ảnh món — đặt file ở public/menu/<id>.jpg rồi set "/menu/<id>.jpg". */
   image?: string;
   /** Nhãn ăn kiêng: "seafood" (hải sản), "animal" (nguồn động vật). Không tag = thuần chay-friendly. */
@@ -66,6 +69,7 @@ export const GROUP_LABELS: Record<GroupKey, string> = {
   sauces: "Nước sốt (Sauce)",
   toppings: "Rau củ ăn kèm (Topping)",
   crisps: "Đồ rắc giòn (Crisp)",
+  drinks: "Đồ uống (Drinks)",
 };
 
 // id -> { item, group } index for O(1) lookup

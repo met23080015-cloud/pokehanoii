@@ -53,7 +53,11 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
         <span className="font-medium">
           {item.kcal ?? 0} kcal{item.grams ? ` · ${item.grams}g` : ""}
         </span>
-        {item.premiumFee ? (
+        {item.price ? (
+          <span className="rounded-full bg-brand-100 px-2 py-0.5 font-semibold text-brand-700">
+            {formatVND(item.price)}
+          </span>
+        ) : item.premiumFee ? (
           <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700">
             +{formatVND(item.premiumFee)}
           </span>

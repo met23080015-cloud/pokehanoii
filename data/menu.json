@@ -575,6 +575,86 @@
         "fiber": 0.5,
         "image": "/menu/crisp-togarashi.png"
       }
+    ],
+    "drinks": [
+      {
+        "id": "drink-orange-carrot",
+        "vi": "Cam + cà rốt",
+        "en": "Orange + Carrot",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 120,
+        "protein": 2,
+        "fat": 0.5,
+        "fiber": 2,
+        "price": 45000,
+        "image": "/menu/drink-orange-carrot.png"
+      },
+      {
+        "id": "drink-coconut",
+        "vi": "Dừa tươi",
+        "en": "Fresh Coconut",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 70,
+        "protein": 1,
+        "fat": 0.5,
+        "fiber": 1,
+        "price": 40000,
+        "image": "/menu/drink-coconut.png"
+      },
+      {
+        "id": "drink-watermelon",
+        "vi": "Dưa hấu",
+        "en": "Watermelon",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 90,
+        "protein": 1,
+        "fat": 0,
+        "fiber": 1,
+        "price": 40000,
+        "image": "/menu/drink-watermelon.png"
+      },
+      {
+        "id": "drink-pineapple-mango",
+        "vi": "Dứa + xoài",
+        "en": "Pineapple + Mango",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 140,
+        "protein": 1.5,
+        "fat": 0.5,
+        "fiber": 2,
+        "price": 45000,
+        "image": "/menu/drink-pineapple-mango.png"
+      },
+      {
+        "id": "drink-guava-strawberry",
+        "vi": "Ổi + dâu",
+        "en": "Guava + Strawberry",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 120,
+        "protein": 1.5,
+        "fat": 0.5,
+        "fiber": 3,
+        "price": 45000,
+        "image": "/menu/drink-guava-strawberry.png"
+      },
+      {
+        "id": "drink-guava-cucumber",
+        "vi": "Ổi + dưa leo",
+        "en": "Guava + Cucumber",
+        "unit": "chai",
+        "grams": 355,
+        "kcal": 90,
+        "protein": 1.5,
+        "fat": 0.3,
+        "fiber": 2.5,
+        "price": 45000,
+        "image": "/menu/drink-guava-cucumber.png"
+      }
     ]
   }
 }

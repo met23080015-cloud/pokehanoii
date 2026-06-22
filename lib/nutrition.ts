@@ -48,7 +48,8 @@ export function computeTotals(
     fiber = 0,
     premiumFees = 0,
     proteinScoops = 0,
-    premiumCount = 0;
+    premiumCount = 0,
+    drinksTotal = 0;
 
   for (const [id, qtyRaw] of Object.entries(selection)) {
     const qty = qtyRaw || 0;
@@ -61,7 +62,10 @@ export function computeTotals(
     fat += (item.fat ?? 0) * qty;
     fiber += (item.fiber ?? 0) * qty;
 
-    if (getItemGroup(id) === "proteins") proteinScoops += qty;
+    const group = getItemGroup(id);
+    if (group === "proteins") proteinScoops += qty;
+    // Đồ uống tính theo GIÁ RIÊNG (không dùng giá bowl), macro vẫn vào tổng.
+    if (group === "drinks") drinksTotal += (item.price ?? 0) * qty;
     if (item.premiumFee) {
       premiumFees += item.premiumFee * qty;
       premiumCount += qty;
@@ -88,7 +92,7 @@ export function computeTotals(
   const extraFee = config?.extraPokeFee ?? pricing.extraPokeFee;
   const extraPoke =
     Math.max(0, proteinScoops - 1) * extraFee + extraProteinScoops * extraFee;
-  const price = basePrice + extraPoke + premiumFees;
+  const price = basePrice + extraPoke + premiumFees + drinksTotal;
 
   return {
     kcal: Math.round(kcal),
