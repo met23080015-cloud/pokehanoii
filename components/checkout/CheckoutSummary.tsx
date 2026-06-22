@@ -1,23 +1,76 @@
 "use client";
 
-import { getItem } from "@/lib/menu";
+import { getItem, getItemGroup } from "@/lib/menu";
+import { useBowl } from "@/lib/store/bowl";
 import { formatVND, type BowlSize, type Totals } from "@/lib/nutrition";
 import type { Selection } from "@/lib/nutrition";
+
+// Nhóm chỉnh được SỐ LƯỢNG (>1 hợp lý); nhóm khác chỉ bật/tắt → chỉ cho xoá.
+const QTY_GROUPS = new Set(["proteins", "drinks"]);
+
+/** Nút ± / xoá cho 1 dòng món — chỉ hiện khi editable. Sửa selection qua store
+ *  → totals/giá/VietQR ở Checkout tự cập nhật live. */
+function LineControls({ id, qty }: { id: string; qty: number }) {
+  const { setQty } = useBowl();
+  const isQty = QTY_GROUPS.has(getItemGroup(id) ?? "");
+  const btn =
+    "press flex h-7 w-7 items-center justify-center rounded-full text-base font-bold leading-none";
+
+  if (!isQty) {
+    return (
+      <button
+        type="button"
+        onClick={() => setQty(id, 0)}
+        aria-label="Bỏ món"
+        className={`${btn} bg-red-50 text-red-500`}
+      >
+        ✕
+      </button>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => setQty(id, qty - 1)}
+        aria-label="Bớt"
+        className={`${btn} bg-sand text-ink/70`}
+      >
+        −
+      </button>
+      <span className="w-5 text-center text-sm font-bold tabular-nums">{qty}</span>
+      <button
+        type="button"
+        onClick={() => setQty(id, qty + 1)}
+        aria-label="Thêm"
+        className={`${btn} bg-brand-600 text-white`}
+      >
+        +
+      </button>
+    </div>
+  );
+}
 
 export default function CheckoutSummary({
   selection,
   totals,
   size = "regular",
+  editable = false,
 }: {
   selection: Selection;
   totals: Totals;
   size?: BowlSize;
+  /** Bật ± / xoá món ngay tại bước xác nhận (luồng AI verdict). */
+  editable?: boolean;
 }) {
   const lines = Object.entries(selection).filter(([, q]) => (q || 0) > 0);
 
   return (
     <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
-      <h3 className="mb-2 font-bold tracking-tight">Bát của bạn</h3>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="font-bold tracking-tight">Bát của bạn</h3>
+        {editable && <span className="text-xs text-ink/40">Chạm ± để chỉnh</span>}
+      </div>
       <p className="mb-2 inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
         {size === "extra" ? "🔥 Bát Extra Poke (thêm phần đạm)" : "Bát vừa (Regular)"}
       </p>
@@ -25,17 +78,28 @@ export default function CheckoutSummary({
         {lines.map(([id, qty]) => {
           const it = getItem(id);
           return (
-            <li key={id} className="flex justify-between py-2">
-              <span className="text-ink/80">
+            <li key={id} className="flex items-center justify-between gap-2 py-2">
+              <span className="min-w-0 flex-1 truncate text-ink/80">
                 {it?.vi ?? id}
-                {qty > 1 && <span className="font-semibold text-brand-600"> ×{qty}</span>}
+                {!editable && qty > 1 && (
+                  <span className="font-semibold text-brand-600"> ×{qty}</span>
+                )}
               </span>
-              <span className="text-ink/45 tabular-nums">
-                {Math.round((it?.kcal ?? 0) * qty)} kcal
-              </span>
+              {editable ? (
+                <LineControls id={id} qty={qty} />
+              ) : (
+                <span className="text-ink/45 tabular-nums">
+                  {Math.round((it?.kcal ?? 0) * qty)} kcal
+                </span>
+              )}
             </li>
           );
         })}
+        {lines.length === 0 && (
+          <li className="py-3 text-center text-sm text-ink/40">
+            Chưa có món nào — quay lại chọn món nhé.
+          </li>
+        )}
       </ul>
 
       <div className="mt-3 grid grid-cols-4 gap-2 rounded-xl bg-sand p-2.5 text-center text-[11px] text-ink/55">

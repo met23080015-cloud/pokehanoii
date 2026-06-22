@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
+import { getItemGroup } from "@/lib/menu";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { PayMethod } from "@/lib/supabase/types";
 import CheckoutSummary from "./CheckoutSummary";
@@ -53,6 +54,10 @@ export default function Checkout({
   }
 
   const orderInfo = `Poke ban ${tableNo ?? "-"}`;
+  // Đơn hợp lệ phải có lớp nền (server cũng chặn) — khoá nút gửi nếu thiếu.
+  const hasBase = Object.entries(selection).some(
+    ([id, q]) => (q || 0) > 0 && getItemGroup(id) === "bases",
+  );
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-4 p-4 pb-28">
@@ -64,7 +69,15 @@ export default function Checkout({
         ← Quay lại chỉnh bát
       </button>
 
-      <CheckoutSummary selection={selection} totals={totals} size={size} />
+      <CheckoutSummary selection={selection} totals={totals} size={size} editable />
+
+      <button
+        type="button"
+        onClick={onBack}
+        className="press -mt-1 self-start rounded-full border border-brand-500 bg-white px-3.5 py-1.5 text-sm font-semibold text-brand-700"
+      >
+        + Thêm món khác
+      </button>
 
       <ReviewCard />
 
@@ -79,10 +92,16 @@ export default function Checkout({
         <p className="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">{error}</p>
       )}
 
+      {!hasBase && (
+        <p className="rounded-xl bg-amber-50 p-3 text-sm font-medium text-amber-700">
+          Bát cần ít nhất 1 lớp nền — bấm “+ Thêm món khác” để chọn nền.
+        </p>
+      )}
+
       <button
         type="button"
         onClick={submit}
-        disabled={submitting}
+        disabled={submitting || !hasBase}
         className="press rounded-2xl bg-brand-600 px-5 py-3.5 font-bold text-white shadow-soft disabled:opacity-50"
       >
         {submitting ? "Đang gửi..." : "Gửi đơn tới quầy"}
