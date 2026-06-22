@@ -26,10 +26,12 @@ export async function POST(req: Request) {
   }
 
   // NGUỒN CHÂN LÝ: tính lại totals server-side, không tin số client gửi.
+  const size = bowl?.size === "extra" ? "extra" : "regular";
   const safeBowl: BowlContext = {
     selection: bowl?.selection ?? {},
     target: bowl?.target ?? 0,
-    totals: computeTotals(bowl?.selection ?? {}),
+    size,
+    totals: computeTotals(bowl?.selection ?? {}, undefined, size),
   };
 
   const profile = await customerProfile(req);

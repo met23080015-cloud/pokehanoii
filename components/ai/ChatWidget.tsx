@@ -35,7 +35,7 @@ function renderAssistant(content: string): React.ReactNode {
 export default function ChatWidget() {
   const [open, setOpen] = useState(false);
   const [token, setToken] = useState<string | undefined>();
-  const { selection, totals, calorieTarget } = useBowl();
+  const { selection, totals, calorieTarget, size } = useBowl();
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
     useChat({ api: "/api/chat" });
 
@@ -49,7 +49,7 @@ export default function ChatWidget() {
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     handleSubmit(e, {
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-      body: { bowl: { selection, totals, target: calorieTarget } },
+      body: { bowl: { selection, totals, target: calorieTarget, size } },
     });
   };
 

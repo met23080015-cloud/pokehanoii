@@ -26,3 +26,27 @@ describe("computeTotals — ghi đè giá từ config", () => {
     expect(b.protein).toBe(a.protein);
   });
 });
+
+describe("computeTotals — cỡ bát Extra Poke", () => {
+  const regular = { "base-brown-rice": 1, "poke-salmon": 1 };
+
+  it("Regular: 1 phần đạm = giá cơ bản 198.000đ", () => {
+    expect(computeTotals(regular, undefined, "regular").price).toBe(198000);
+  });
+
+  it("Extra Poke: +48.000đ so với Regular (= 246.000đ)", () => {
+    expect(computeTotals(regular, undefined, "extra").price).toBe(246000);
+  });
+
+  it("Extra Poke cộng macro của phần đạm đang chọn vào dinh dưỡng", () => {
+    const r = computeTotals(regular, undefined, "regular");
+    const e = computeTotals(regular, undefined, "extra");
+    expect(e.kcal).toBeGreaterThan(r.kcal);
+    expect(e.protein).toBeGreaterThan(r.protein);
+    expect(e.proteinScoops).toBe(r.proteinScoops + 1);
+  });
+
+  it("mặc định không truyền size = Regular (giữ hành vi cũ)", () => {
+    expect(computeTotals(regular).price).toBe(computeTotals(regular, undefined, "regular").price);
+  });
+});

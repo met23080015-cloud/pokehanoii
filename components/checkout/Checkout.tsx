@@ -16,7 +16,7 @@ export default function Checkout({
   onBack: () => void;
   onConfirmed: (orderId: string, payMethod: PayMethod, orderToken?: string) => void;
 }) {
-  const { selection, totals, tableNo } = useBowl();
+  const { selection, totals, tableNo, size } = useBowl();
   const [payMethod, setPayMethod] = useState<PayMethod>("counter");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export default function Checkout({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers,
-        body: JSON.stringify({ table_no: tableNo, selection, pay_method: payMethod }),
+        body: JSON.stringify({ table_no: tableNo, selection, pay_method: payMethod, size }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -64,7 +64,7 @@ export default function Checkout({
         ← Quay lại chỉnh bát
       </button>
 
-      <CheckoutSummary selection={selection} totals={totals} />
+      <CheckoutSummary selection={selection} totals={totals} size={size} />
 
       <ReviewCard />
 

@@ -9,6 +9,7 @@ import { setRecent, consumePendingLoad } from "@/lib/favorites";
 import Logo from "@/components/brand/Logo";
 import WelcomeScreen from "./WelcomeScreen";
 import CalorieTarget from "./CalorieTarget";
+import SizeSelector from "./SizeSelector";
 import GroupStep from "./GroupStep";
 import DietaryFilter from "./DietaryFilter";
 import FavoritesBar from "./FavoritesBar";
@@ -123,6 +124,7 @@ export default function OrderBuilder() {
       <FavoritesBar />
       <CalorieTarget />
       <DietaryFilter value={diet} onChange={applyDiet} />
+      <SizeSelector />
       <GroupStep step={1} groupKey="bases" mode="single" help="Chọn 1 lớp nền." diet={diet} unavailable={unavailable} />
       <GroupStep step={2} groupKey="proteins" mode="qty" help="Thêm số muỗng đạm (phần đầu đã gồm trong giá)." diet={diet} unavailable={unavailable} />
       <GroupStep step={3} groupKey="mixins" mode="multi" help="Đồ trộn kèm (tùy chọn)." diet={diet} unavailable={unavailable} />

@@ -27,13 +27,21 @@ export interface PriceConfig {
   extraPokeFee?: number;
 }
 
+/** Cỡ bát: vừa (Regular) hoặc thêm phần đạm (Extra Poke). */
+export type BowlSize = "regular" | "extra";
+
 /**
  * Tính tổng dinh dưỡng + giá từ selection.
- * Giá: basePrice + extraPokeFee * (số muỗng đạm vượt quá 1) + tổng premiumFee.
+ * Giá: basePrice + extraPokeFee * (số muỗng đạm vượt quá 1) + (Extra Poke ? extraPokeFee) + premiumFee.
+ * Cỡ "extra" = thêm 1 phần đạm: cộng phụ phí extraPokeFee + macro của loại đạm đang chọn.
  * Đây là NGUỒN CHÂN LÝ — server tính lại, AI không tự tính.
- * `config` (tùy chọn) ghi đè giá từ DB; mặc định dùng menu.json (giữ test cũ pass).
+ * `config` ghi đè giá từ DB; `size` mặc định "regular" → giữ hành vi & test cũ.
  */
-export function computeTotals(selection: Selection, config?: PriceConfig): Totals {
+export function computeTotals(
+  selection: Selection,
+  config?: PriceConfig,
+  size: BowlSize = "regular",
+): Totals {
   let kcal = 0,
     protein = 0,
     fat = 0,
@@ -60,9 +68,26 @@ export function computeTotals(selection: Selection, config?: PriceConfig): Total
     }
   }
 
+  // Extra Poke: thêm 1 phần đạm — macro của loại đạm đang chọn (nếu có) vào dinh dưỡng.
+  let extraProteinScoops = 0;
+  if (size === "extra") {
+    extraProteinScoops = 1;
+    const firstProtein = Object.entries(selection).find(
+      ([id, q]) => (q || 0) > 0 && getItemGroup(id) === "proteins",
+    );
+    const p = firstProtein ? getItem(firstProtein[0]) : null;
+    if (p) {
+      kcal += p.kcal ?? 0;
+      protein += p.protein ?? 0;
+      fat += p.fat ?? 0;
+      fiber += p.fiber ?? 0;
+    }
+  }
+
   const basePrice = config?.basePrice ?? pricing.basePrice;
   const extraFee = config?.extraPokeFee ?? pricing.extraPokeFee;
-  const extraPoke = Math.max(0, proteinScoops - 1) * extraFee;
+  const extraPoke =
+    Math.max(0, proteinScoops - 1) * extraFee + extraProteinScoops * extraFee;
   const price = basePrice + extraPoke + premiumFees;
 
   return {
@@ -71,7 +96,7 @@ export function computeTotals(selection: Selection, config?: PriceConfig): Total
     fat: round1(fat),
     fiber: round1(fiber),
     price,
-    proteinScoops,
+    proteinScoops: proteinScoops + extraProteinScoops,
     premiumCount,
   };
 }

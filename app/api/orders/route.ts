@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Thiếu selection" }, { status: 400 });
   }
   const payMethod = body.pay_method === "vietqr" ? "vietqr" : "counter";
+  const size = body.size === "extra" ? "extra" : "regular";
 
   // Đơn hợp lệ phải có ít nhất 1 lớp nền (basePrice luôn được cộng nên không thể
   // dựa vào price > 0 để bắt đơn rỗng — phải kiểm tra có món thật).
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
     : undefined;
 
   // NGUỒN CHÂN LÝ: server tự tính lại totals, không tin client.
-  const totals = computeTotals(selection, priceConfig);
+  const totals = computeTotals(selection, priceConfig, size);
   if (totals.price <= 0) {
     return NextResponse.json({ error: "Đơn trống" }, { status: 400 });
   }
@@ -64,6 +65,11 @@ export async function POST(req: Request) {
         kcal: Math.round((it?.kcal ?? 0) * (qty as number)),
       };
     });
+
+  // Cỡ Extra Poke → thêm 1 dòng để bếp/admin biết khách thêm phần đạm.
+  if (size === "extra") {
+    items.push({ id: "size-extra-poke", vi: "🔥 Extra Poke (thêm phần đạm)", qty: 1, kcal: 0 });
+  }
 
   // Khách đăng nhập (tùy chọn): xác thực JWT → gắn user_id để tích điểm + lịch sử
   let userId: string | null = null;

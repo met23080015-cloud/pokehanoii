@@ -1,21 +1,26 @@
 "use client";
 
 import { getItem } from "@/lib/menu";
-import { formatVND, type Totals } from "@/lib/nutrition";
+import { formatVND, type BowlSize, type Totals } from "@/lib/nutrition";
 import type { Selection } from "@/lib/nutrition";
 
 export default function CheckoutSummary({
   selection,
   totals,
+  size = "regular",
 }: {
   selection: Selection;
   totals: Totals;
+  size?: BowlSize;
 }) {
   const lines = Object.entries(selection).filter(([, q]) => (q || 0) > 0);
 
   return (
     <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-soft">
       <h3 className="mb-2 font-bold tracking-tight">Bát của bạn</h3>
+      <p className="mb-2 inline-block rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700">
+        {size === "extra" ? "🔥 Bát Extra Poke (thêm phần đạm)" : "Bát vừa (Regular)"}
+      </p>
       <ul className="divide-y divide-black/5 text-sm">
         {lines.map(([id, qty]) => {
           const it = getItem(id);

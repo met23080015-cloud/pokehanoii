@@ -27,10 +27,12 @@ export async function POST(req: Request) {
 
   // NGUỒN CHÂN LÝ: tính lại totals server-side (không tin số client gửi) + tránh
   // crash khi body thiếu totals.
+  const size = body.bowl?.size === "extra" ? "extra" : "regular";
   const safeBowl: BowlContext = {
     selection: body.bowl?.selection ?? {},
     target: body.bowl?.target ?? 0,
-    totals: computeTotals(body.bowl?.selection ?? {}),
+    size,
+    totals: computeTotals(body.bowl?.selection ?? {}, undefined, size),
   };
 
   // Cá nhân hóa (tùy chọn): nếu khách đã đăng nhập → tóm tắt khẩu vị từ lịch sử.

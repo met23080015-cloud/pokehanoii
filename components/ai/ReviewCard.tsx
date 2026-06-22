@@ -8,7 +8,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import type { AnalyzeResult } from "@/lib/ai/schema";
 
 export default function ReviewCard() {
-  const { selection, totals, calorieTarget, setQty, toggle, selectSingle } = useBowl();
+  const { selection, totals, calorieTarget, size, setQty, toggle, selectSingle } = useBowl();
   const [ai, setAi] = useState<AnalyzeResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [aiFailed, setAiFailed] = useState(false);
@@ -29,7 +29,7 @@ export default function ReviewCard() {
         const r = await fetch("/api/analyze", {
           method: "POST",
           headers,
-          body: JSON.stringify({ selection, totals, target: calorieTarget }),
+          body: JSON.stringify({ selection, totals, target: calorieTarget, size }),
         });
         if (!r.ok) throw new Error();
         const data: AnalyzeResult = await r.json();

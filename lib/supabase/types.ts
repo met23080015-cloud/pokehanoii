@@ -51,4 +51,5 @@ export interface CreateOrderPayload {
   table_no: number | null;
   selection: Record<string, number>;
   pay_method: PayMethod;
+  size?: "regular" | "extra";
 }

@@ -1,5 +1,5 @@
 import { groups, GROUP_LABELS, getItem, thresholds, type GroupKey } from "@/lib/menu";
-import type { Selection, Totals } from "@/lib/nutrition";
+import type { BowlSize, Selection, Totals } from "@/lib/nutrition";
 import type { Analytics } from "@/lib/analytics";
 import { formatVND } from "@/lib/nutrition";
 
@@ -22,6 +22,7 @@ export interface BowlContext {
   selection: Selection;
   totals: Totals;
   target: number;
+  size?: BowlSize;
 }
 
 export function describeBowl(bowl: BowlContext): string {
@@ -33,8 +34,11 @@ export function describeBowl(bowl: BowlContext): string {
     });
   const list = items.length ? items.join(", ") : "(chưa chọn món nào)";
   const t = bowl.totals;
+  const sizeLine =
+    bowl.size === "extra" ? "Cỡ bát: Extra Poke (thêm 1 phần đạm)." : "Cỡ bát: Vừa (Regular).";
   return [
     `Bowl hiện tại: ${list}.`,
+    sizeLine,
     `Tổng (do hệ thống tính, CHÍNH XÁC): ${t.kcal} kcal, đạm ${t.protein}g, béo ${t.fat}g, xơ ${t.fiber}g.`,
     `Mục tiêu calo: ${bowl.target} kcal (còn ${bowl.target - t.kcal} kcal).`,
     `Ngưỡng cân bằng tham chiếu: đạm ${thresholds.proteinMin}-${thresholds.proteinMax}g, xơ ≥${thresholds.fiberMin}g, béo ≤${thresholds.fatMax}g.`,
