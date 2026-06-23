@@ -5,6 +5,7 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n";
 import type { Order, OrderStatus } from "@/lib/supabase/types";
 import OrderCard from "./OrderCard";
+import ServiceRequestsPanel from "./ServiceRequestsPanel";
 
 export default function AdminDashboard() {
   const t = useT();
@@ -96,6 +97,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="flex flex-col gap-3">
+      <ServiceRequestsPanel />
       <p className="flex items-center gap-2 text-sm text-ink/55">
         <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-500" />
         {ready

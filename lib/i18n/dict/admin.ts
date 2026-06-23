@@ -69,6 +69,11 @@ export const admin: Slice = {
       minAgo: "{n} phút trước",
       hourAgo: "{n} giờ trước",
 
+      // Bảng yêu cầu tại bàn (panel trên dashboard)
+      reqPanelTitle: "Yêu cầu tại bàn",
+      reqPanelHide: "Thu gọn",
+      reqPanelShow: "Mở rộng",
+
       // Menu manager
       menuHint:
         "Tắt món tạm hết hàng — builder của khách sẽ ẩn món đó <b>ngay lập tức</b>.",
@@ -215,6 +220,11 @@ export const admin: Slice = {
       justNow: "just now",
       minAgo: "{n} min ago",
       hourAgo: "{n} h ago",
+
+      // Table-request panel (on dashboard)
+      reqPanelTitle: "Table requests",
+      reqPanelHide: "Collapse",
+      reqPanelShow: "Expand",
 
       // Menu manager
       menuHint:
