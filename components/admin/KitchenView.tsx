@@ -112,7 +112,7 @@ export default function KitchenView() {
                 })}
               </span>
             </div>
-            <ul className="mt-2 text-base text-ink/85">
+            <ul className="mt-2 max-h-48 overflow-y-auto pr-1 text-base text-ink/85">
               {o.items.map((it) => (
                 <li key={it.id}>
                   • {it.vi}

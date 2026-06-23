@@ -54,7 +54,7 @@ export default function OrderCard({
         </div>
       </div>
 
-      <ul className="mt-2.5 text-sm text-ink/80">
+      <ul className="mt-2.5 max-h-40 overflow-y-auto pr-1 text-sm text-ink/80">
         {order.items.map((it) => (
           <li key={it.id}>
             • {it.vi}
