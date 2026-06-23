@@ -50,3 +50,6 @@ next-env.d.ts
 /scripts/avail-rt.cjs
 
 .vercel
+
+# Playwright MCP debug artifacts
+.playwright-mcp/
