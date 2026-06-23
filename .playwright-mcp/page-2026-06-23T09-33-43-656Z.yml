@@ -1,0 +1,15 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - heading "Poke Hanoi Poke Hanoi · Quản lý đơn" [level=1] [ref=e3]:
+      - img "Poke Hanoi" [ref=e4]
+      - text: Poke Hanoi · Quản lý đơn
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - paragraph [ref=e12]: Đăng nhập nhân viên để quản lý đơn.
+        - generic "Language" [ref=e13]:
+          - button "VI" [pressed] [ref=e14] [cursor=pointer]
+          - button "EN" [ref=e15] [cursor=pointer]
+      - textbox "Email" [active] [ref=e16]
+      - textbox "Mật khẩu" [ref=e17]
+      - button "Đăng nhập" [ref=e18] [cursor=pointer]
+  - alert [ref=e19]

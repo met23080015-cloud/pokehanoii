@@ -1,0 +1,11 @@
+[   37673ms] Error: cannot add `postgres_changes` callbacks for realtime:service-requests after `subscribe()`.
+    at eb.on (https://pokehanoii.vercel.app/_next/static/chunks/445-bb6a4e9f6953b066.js:6:37574)
+    at https://pokehanoii.vercel.app/_next/static/chunks/533-224c6b36c3510dff.js:1:6899
+    at o1 (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:88951)
+    at uE (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104843)
+    at ux (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104727)
+    at uE (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104888)
+    at ux (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104727)
+    at uE (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104823)
+    at ux (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104727)
+    at uE (https://pokehanoii.vercel.app/_next/static/chunks/4bd1b696-c023c6e3521b1417.js:1:104888)

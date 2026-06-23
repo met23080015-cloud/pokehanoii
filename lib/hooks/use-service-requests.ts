@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import type { ServiceRequest } from "@/lib/supabase/types";
+
+// Mỗi instance hook mở 1 channel realtime riêng. Supabase định danh channel theo
+// tên (topic) — nếu hai component (chuông + panel) trùng tên sẽ lỗi
+// "cannot add postgres_changes callbacks after subscribe()". Nên cấp tên duy nhất.
+let channelSeq = 0;
 
 /**
  * Nguồn dữ liệu chung cho thông báo yêu cầu tại bàn (chuông + panel dashboard).
@@ -12,6 +17,8 @@ import type { ServiceRequest } from "@/lib/supabase/types";
 export function useServiceRequests() {
   const [reqs, setReqs] = useState<ServiceRequest[]>([]);
   const supabase = getSupabaseClient();
+  const channelName = useRef<string>("");
+  if (!channelName.current) channelName.current = `service-requests-${++channelSeq}`;
 
   useEffect(() => {
     if (!supabase) return;
@@ -27,7 +34,7 @@ export function useServiceRequests() {
       });
 
     const ch = supabase
-      .channel("service-requests")
+      .channel(channelName.current)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "service_requests" },
