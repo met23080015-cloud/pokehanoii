@@ -115,14 +115,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: msg || "Không tạo được đơn" }, { status: 500 });
   }
 
-  const res = data as { id: string; order_token: string };
+  const res = data as { id: string; order_token: string; pay_code: string };
 
-  // Điểm loyalty được cộng tự động qua DB trigger khi staff xác nhận "đã thanh toán"
+  // Điểm loyalty được cộng tự động qua DB trigger khi đơn được xác nhận "đã thanh toán"
   // (xem migration 0004) — không cộng ở đây để tránh farm đơn chưa trả.
 
   return NextResponse.json({
     id: res.id,
     order_token: res.order_token,
+    pay_code: res.pay_code, // mã nhúng vào nội dung CK để SePay đối soát tự động
     totals,
     pay_method: payMethod,
   });

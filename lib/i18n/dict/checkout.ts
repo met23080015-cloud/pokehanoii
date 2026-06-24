@@ -36,6 +36,12 @@ export const checkout: Slice = {
         "Chưa cấu hình tài khoản VietQR (NEXT_PUBLIC_VIETQR_*). Vui lòng trả tại quầy.",
       vietqrAmount: "Số tiền",
       vietqrInfo: "Nội dung",
+      // PaymentWaiting
+      payScanTitle: "Quét mã để thanh toán",
+      payWaiting: "Đang chờ xác nhận thanh toán…",
+      payAutoConfirm: "Đơn sẽ tự xác nhận ngay khi nhận được tiền. Không cần sửa nội dung chuyển khoản.",
+      paidDetected: "Đã nhận thanh toán!",
+      payManualDone: "Tôi đã chuyển khoản",
     },
   },
   en: {
@@ -71,6 +77,12 @@ export const checkout: Slice = {
         "VietQR account not configured (NEXT_PUBLIC_VIETQR_*). Please pay at the counter.",
       vietqrAmount: "Amount",
       vietqrInfo: "Note",
+      // PaymentWaiting
+      payScanTitle: "Scan to pay",
+      payWaiting: "Waiting for payment confirmation…",
+      payAutoConfirm: "Your order confirms automatically once we receive the transfer. No need to edit the transfer note.",
+      paidDetected: "Payment received!",
+      payManualDone: "I've transferred",
     },
   },
 };

@@ -8,15 +8,21 @@ import { getSupabaseClient } from "@/lib/supabase/client";
 import type { PayMethod } from "@/lib/supabase/types";
 import CheckoutSummary from "./CheckoutSummary";
 import PaymentChoice from "./PaymentChoice";
-import VietQR from "./VietQR";
 import ReviewCard from "@/components/ai/ReviewCard";
 
 export default function Checkout({
   onBack,
   onConfirmed,
+  onAwaitingPayment,
 }: {
   onBack: () => void;
   onConfirmed: (orderId: string, payMethod: PayMethod, orderToken?: string) => void;
+  onAwaitingPayment: (info: {
+    orderId: string;
+    orderToken?: string;
+    payCode: string;
+    amount: number;
+  }) => void;
 }) {
   const t = useT();
   const { selection, totals, tableNo, size } = useBowl();
@@ -47,7 +53,17 @@ export default function Checkout({
         setError(data.error || t("checkout.errSubmit"));
         return;
       }
-      onConfirmed(data.id, payMethod, data.order_token);
+      // VietQR → màn chờ thanh toán (QR + tự xác nhận khi SePay nhận tiền).
+      if (payMethod === "vietqr") {
+        onAwaitingPayment({
+          orderId: data.id,
+          orderToken: data.order_token,
+          payCode: data.pay_code,
+          amount: data.totals?.price ?? totals.price,
+        });
+      } else {
+        onConfirmed(data.id, payMethod, data.order_token);
+      }
     } catch {
       setError(t("checkout.errNetwork"));
     } finally {
@@ -55,7 +71,6 @@ export default function Checkout({
     }
   }
 
-  const orderInfo = `Poke ban ${tableNo ?? "-"}`;
   // Đơn hợp lệ phải có lớp nền (server cũng chặn) — khoá nút gửi nếu thiếu.
   const hasBase = Object.entries(selection).some(
     ([id, q]) => (q || 0) > 0 && getItemGroup(id) === "bases",
@@ -87,8 +102,6 @@ export default function Checkout({
         <h3 className="mb-2 font-bold tracking-tight">{t("checkout.payMethod")}</h3>
         <PaymentChoice value={payMethod} onChange={setPayMethod} />
       </div>
-
-      {payMethod === "vietqr" && <VietQR amount={totals.price} orderInfo={orderInfo} />}
 
       {error && (
         <p className="rounded-xl bg-red-50 p-3 text-sm font-medium text-red-600">{error}</p>

@@ -22,6 +22,7 @@ export interface Order {
   pay_method: PayMethod;
   status: OrderStatus;
   paid?: boolean;
+  pay_code?: string; // mã đối soát SePay (PKH+8hex), sinh ở DB
   user_id?: string | null;
   created_at: string;
 }

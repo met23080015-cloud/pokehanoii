@@ -18,9 +18,10 @@ import FavoritesBar from "./FavoritesBar";
 import NutritionSidebar from "./NutritionSidebar";
 import Checkout from "@/components/checkout/Checkout";
 import OrderConfirmation from "@/components/checkout/OrderConfirmation";
+import PaymentWaiting from "@/components/checkout/PaymentWaiting";
 import ChatWidget from "@/components/ai/ChatWidget";
 
-type View = "welcome" | "build" | "checkout" | "confirmed";
+type View = "welcome" | "build" | "checkout" | "paying" | "confirmed";
 
 export default function OrderBuilder() {
   const { tableNo, reset, selection, calorieTarget, setQty, loadSelection } = useBowl();
@@ -60,6 +61,12 @@ export default function OrderBuilder() {
     payMethod: PayMethod;
     token?: string;
   } | null>(null);
+  const [paying, setPaying] = useState<{
+    orderId: string;
+    orderToken?: string;
+    payCode: string;
+    amount: number;
+  } | null>(null);
 
   if (view === "welcome") {
     return <WelcomeScreen tableNo={tableNo} onStart={() => setView("build")} />;
@@ -83,6 +90,25 @@ export default function OrderBuilder() {
     );
   }
 
+  if (view === "paying" && paying) {
+    return (
+      <main className="mx-auto max-w-md">
+        <PaymentWaiting
+          orderId={paying.orderId}
+          orderToken={paying.orderToken}
+          payCode={paying.payCode}
+          amount={paying.amount}
+          tableNo={tableNo}
+          onDone={() => {
+            setConfirmed({ id: paying.orderId, payMethod: "vietqr", token: paying.orderToken });
+            setPaying(null);
+            setView("confirmed");
+          }}
+        />
+      </main>
+    );
+  }
+
   if (view === "checkout") {
     return (
       <main>
@@ -92,6 +118,11 @@ export default function OrderBuilder() {
             setRecent({ selection, target: calorieTarget }); // cho "Đặt lại"
             setConfirmed({ id, payMethod, token });
             setView("confirmed");
+          }}
+          onAwaitingPayment={(info) => {
+            setRecent({ selection, target: calorieTarget }); // cho "Đặt lại"
+            setPaying(info);
+            setView("paying");
           }}
         />
         <ChatWidget />
