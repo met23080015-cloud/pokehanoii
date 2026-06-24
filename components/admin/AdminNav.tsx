@@ -14,6 +14,7 @@ export default function AdminNav() {
     { href: "/admin/menu", label: t("admin.navMenu") },
     { href: "/admin/inventory", label: t("admin.navInventory") },
     { href: "/admin/analytics", label: t("admin.navAnalytics") },
+    { href: "/admin/qr", label: t("admin.navQr") },
   ];
   return (
     <nav className="flex items-center gap-1 rounded-full bg-white p-1 shadow-soft">

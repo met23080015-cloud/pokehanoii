@@ -12,6 +12,7 @@ export const admin: Slice = {
       navMenu: "Thực đơn",
       navInventory: "Tồn kho",
       navAnalytics: "Thống kê",
+      navQr: "Mã QR",
 
       // Page titles
       titleOrders: "Poke Hanoi · Quản lý đơn",
@@ -164,6 +165,7 @@ export const admin: Slice = {
       navMenu: "Menu",
       navInventory: "Inventory",
       navAnalytics: "Analytics",
+      navQr: "QR codes",
 
       // Page titles
       titleOrders: "Poke Hanoi · Orders",
