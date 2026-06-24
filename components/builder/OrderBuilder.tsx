@@ -68,6 +68,12 @@ export default function OrderBuilder() {
     amount: number;
   } | null>(null);
 
+  // Bàn chỉ đến từ QR (?table=N). Không có bàn → luôn hiện gate, chặn mọi view gọi món
+  // (kể cả khi "Đặt lại" từ /account cố nhảy thẳng vào build).
+  if (tableNo == null) {
+    return <WelcomeScreen tableNo={null} onStart={() => {}} />;
+  }
+
   if (view === "welcome") {
     return <WelcomeScreen tableNo={tableNo} onStart={() => setView("build")} />;
   }
@@ -141,16 +147,9 @@ export default function OrderBuilder() {
         </div>
         <div className="flex items-center gap-2">
           {tableNo != null && (
-            <button
-              type="button"
-              onClick={() => setView("welcome")}
-              aria-label={t("welcome.changeTable")}
-              title={t("welcome.changeTable")}
-              className="press flex items-center gap-1 rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white shadow-soft"
-            >
+            <span className="flex items-center gap-1 rounded-full bg-brand-600 px-3 py-1.5 text-sm font-bold text-white shadow-soft">
               {t("common.table")} {tableNo}
-              <span aria-hidden className="text-xs opacity-80">✎</span>
-            </button>
+            </span>
           )}
           <LanguageToggle />
           <a

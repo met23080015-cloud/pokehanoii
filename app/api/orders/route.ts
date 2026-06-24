@@ -20,10 +20,10 @@ export async function POST(req: Request) {
   const payMethod = body.pay_method === "vietqr" ? "vietqr" : "counter";
   const size = body.size === "extra" ? "extra" : "regular";
 
-  // Bàn có thể null (khách chưa chọn) — nhưng nếu có thì phải trong 1..MAX_TABLE.
-  if (body.table_no != null && !isValidTable(body.table_no)) {
+  // Dine-in: bàn đến từ QR (?table=N) nên BẮT BUỘC có và phải trong 1..MAX_TABLE.
+  if (!isValidTable(body.table_no)) {
     return NextResponse.json(
-      { error: `Số bàn không hợp lệ (chỉ 1–${MAX_TABLE})` },
+      { error: `Thiếu số bàn — vui lòng quét mã QR tại bàn (chỉ 1–${MAX_TABLE}).` },
       { status: 400 },
     );
   }
