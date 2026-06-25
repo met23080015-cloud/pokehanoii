@@ -42,6 +42,14 @@ export const checkout: Slice = {
       payAutoConfirm: "Đơn sẽ tự xác nhận ngay khi nhận được tiền. Không cần sửa nội dung chuyển khoản.",
       paidDetected: "Đã nhận thanh toán!",
       payManualDone: "Tôi đã chuyển khoản",
+      // Đổi điểm (RedeemPoints)
+      redeemTitle: "Dùng điểm thưởng",
+      redeemHave: "Đang có",
+      redeemPointsUnit: "điểm",
+      redeemUse: "Dùng",
+      redeemMax: "Tối đa",
+      redeemDiscount: "Giảm",
+      redeemHint: "1 điểm = 1.000đ · tối đa 50% đơn",
     },
   },
   en: {
@@ -83,6 +91,14 @@ export const checkout: Slice = {
       payAutoConfirm: "Your order confirms automatically once we receive the transfer. No need to edit the transfer note.",
       paidDetected: "Payment received!",
       payManualDone: "I've transferred",
+      // Redeem points (RedeemPoints)
+      redeemTitle: "Use reward points",
+      redeemHave: "You have",
+      redeemPointsUnit: "points",
+      redeemUse: "Use",
+      redeemMax: "Max",
+      redeemDiscount: "Discount",
+      redeemHint: "1 point = 1,000đ · up to 50% of order",
     },
   },
 };

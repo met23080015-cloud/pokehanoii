@@ -5,9 +5,12 @@ import { useBowl } from "@/lib/store/bowl";
 import { getItemGroup } from "@/lib/menu";
 import { useT } from "@/lib/i18n";
 import { getSupabaseClient } from "@/lib/supabase/client";
+import { formatVND } from "@/lib/nutrition";
+import { discountForPoints } from "@/lib/loyalty";
 import type { PayMethod } from "@/lib/supabase/types";
 import CheckoutSummary from "./CheckoutSummary";
 import PaymentChoice from "./PaymentChoice";
+import RedeemPoints from "./RedeemPoints";
 import ReviewCard from "@/components/ai/ReviewCard";
 
 export default function Checkout({
@@ -27,6 +30,7 @@ export default function Checkout({
   const t = useT();
   const { selection, totals, tableNo, size } = useBowl();
   const [payMethod, setPayMethod] = useState<PayMethod>("counter");
+  const [redeemPoints, setRedeemPoints] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +50,13 @@ export default function Checkout({
       const res = await fetch("/api/orders", {
         method: "POST",
         headers,
-        body: JSON.stringify({ table_no: tableNo, selection, pay_method: payMethod, size }),
+        body: JSON.stringify({
+          table_no: tableNo,
+          selection,
+          pay_method: payMethod,
+          size,
+          points_redeem: redeemPoints,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -59,7 +69,7 @@ export default function Checkout({
           orderId: data.id,
           orderToken: data.order_token,
           payCode: data.pay_code,
-          amount: data.totals?.price ?? totals.price,
+          amount: data.net_price ?? data.totals?.price ?? totals.price,
         });
       } else {
         onConfirmed(data.id, payMethod, data.order_token);
@@ -97,6 +107,17 @@ export default function Checkout({
       </button>
 
       <ReviewCard />
+
+      <RedeemPoints subtotal={totals.price} value={redeemPoints} onChange={setRedeemPoints} />
+
+      {redeemPoints > 0 && (
+        <div className="flex items-center justify-between rounded-2xl bg-brand-600 px-4 py-3 text-white shadow-soft">
+          <span className="text-sm font-semibold">{t("checkout.total")}</span>
+          <span className="text-lg font-extrabold">
+            {formatVND(Math.max(0, totals.price - discountForPoints(redeemPoints)))}
+          </span>
+        </div>
+      )}
 
       <div>
         <h3 className="mb-2 font-bold tracking-tight">{t("checkout.payMethod")}</h3>

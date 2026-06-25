@@ -23,6 +23,7 @@ export interface Order {
   status: OrderStatus;
   paid?: boolean;
   pay_code?: string; // mã đối soát SePay (PKH+8hex), sinh ở DB
+  points_redeemed?: number; // điểm đã dùng để giảm giá đơn này
   user_id?: string | null;
   created_at: string;
 }
@@ -75,4 +76,5 @@ export interface CreateOrderPayload {
   selection: Record<string, number>;
   pay_method: PayMethod;
   size?: "regular" | "extra";
+  points_redeem?: number; // điểm khách muốn dùng để giảm giá (server kẹp trần)
 }

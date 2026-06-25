@@ -89,6 +89,12 @@ export async function POST(req: Request) {
     userId = u.user?.id ?? null;
   }
 
+  // Đổi điểm: chỉ áp dụng khi khách đã đăng nhập; server kẹp trần (50% đơn + số điểm có).
+  const pointsRedeem =
+    userId && Number.isFinite(body.points_redeem) && (body.points_redeem ?? 0) > 0
+      ? Math.floor(body.points_redeem as number)
+      : 0;
+
   // Trừ kho + tạo đơn ATOMIC qua RPC (chống oversell/race). Nguyên liệu hết → lỗi OUT_OF_STOCK.
   const { data, error } = await supabase.rpc("place_order", {
     p_items: items,
@@ -101,6 +107,7 @@ export async function POST(req: Request) {
     p_total_price: totals.price,
     p_pay_method: payMethod,
     p_size: size,
+    p_points_redeem: pointsRedeem,
   });
 
   if (error) {
@@ -115,16 +122,25 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: msg || "Không tạo được đơn" }, { status: 500 });
   }
 
-  const res = data as { id: string; order_token: string; pay_code: string };
+  const res = data as {
+    id: string;
+    order_token: string;
+    pay_code: string;
+    total_price: number; // tổng RÒNG sau khi trừ điểm (server kẹp trần)
+    points_redeemed: number;
+  };
 
-  // Điểm loyalty được cộng tự động qua DB trigger khi đơn được xác nhận "đã thanh toán"
-  // (xem migration 0004) — không cộng ở đây để tránh farm đơn chưa trả.
+  // Điểm loyalty được cộng/trừ tự động qua DB trigger khi đơn được xác nhận "đã thanh toán"
+  // (xem migration 0004 + 0010) — không xử lý ở đây để tránh farm đơn chưa trả.
 
   return NextResponse.json({
     id: res.id,
     order_token: res.order_token,
     pay_code: res.pay_code, // mã nhúng vào nội dung CK để SePay đối soát tự động
-    totals,
+    // totals.price là tổng gốc; net_price là số tiền thực trả (đã trừ điểm) → dùng cho QR + màn chờ.
+    totals: { ...totals, price: res.total_price },
+    net_price: res.total_price,
+    points_redeemed: res.points_redeemed,
     pay_method: payMethod,
   });
 }

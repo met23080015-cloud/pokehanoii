@@ -176,6 +176,18 @@ export default function AccountPanel() {
                     {formatVND(o.total_price)} ·{" "}
                     {o.paid ? t("account.paidShort") : t("account.unpaidShort")}
                   </p>
+                  <p className="mt-0.5 flex flex-wrap gap-2 text-xs">
+                    {(o.points_redeemed ?? 0) > 0 && (
+                      <span className="font-semibold text-amber-600">
+                        −{o.points_redeemed} {t("account.points")}
+                      </span>
+                    )}
+                    {o.paid && Math.floor(o.total_price / 10000) > 0 && (
+                      <span className="font-semibold text-brand-600">
+                        +{Math.floor(o.total_price / 10000)} {t("account.points")}
+                      </span>
+                    )}
+                  </p>
                 </div>
                 <button
                   type="button"
