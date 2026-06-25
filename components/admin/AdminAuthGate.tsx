@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { getSupabaseClient } from "@/lib/supabase/client";
 import { useT } from "@/lib/i18n";
 import AdminGate from "./AdminGate";
@@ -9,11 +10,17 @@ import AdminNav from "./AdminNav";
 
 type Status = "loading" | "out" | "in";
 
+// Nhớ kết quả kiểm tra staff theo user (sống qua các lần chuyển trang admin) →
+// đổi trang không phải hỏi lại DB nên không nháy về màn "đang kiểm tra".
+// Reset khi đăng xuất / đổi user.
+let staffCache: { uid: string; isStaff: boolean } | null = null;
+
 export default function AdminAuthGate({ children }: { children?: React.ReactNode }) {
   const t = useT();
   const supabase = getSupabaseClient();
   const [status, setStatus] = useState<Status>("loading");
   const [email, setEmail] = useState("");
+  const [uid, setUid] = useState<string | null>(null);
   const [isStaff, setIsStaff] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -21,27 +28,62 @@ export default function AdminAuthGate({ children }: { children?: React.ReactNode
       setStatus("out");
       return;
     }
-    supabase.auth.getSession().then(({ data }) => {
-      setStatus(data.session ? "in" : "out");
-      setEmail(data.session?.user.email ?? "");
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+    let active = true;
+    let currentUid: string | null = null;
+
+    const apply = (session: Session | null) => {
+      currentUid = session?.user.id ?? null;
+      setUid(currentUid);
       setStatus(session ? "in" : "out");
       setEmail(session?.user.email ?? "");
-      setIsStaff(null);
+      if (!session) {
+        staffCache = null;
+        setIsStaff(null);
+      } else if (staffCache?.uid === session.user.id) {
+        setIsStaff(staffCache.isStaff); // dùng lại cache → khỏi nháy loading
+      } else {
+        setIsStaff(null); // user mới → cần kiểm tra lại
+      }
+    };
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (active) apply(data.session);
     });
-    return () => sub.subscription.unsubscribe();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
+      const newUid = session?.user.id ?? null;
+      // Sự kiện làm mới token của CÙNG user (tab focus lại, token hết hạn tự gia hạn…)
+      // → giữ nguyên UI, KHÔNG reset state để khỏi nháy về màn trống / bị treo.
+      if (newUid === currentUid && event !== "SIGNED_OUT") return;
+      apply(session);
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, [supabase]);
 
-  // Khi đã đăng nhập → kiểm tra có trong allowlist staff không (RLS: chỉ đọc được dòng của mình)
+  // Kiểm tra allowlist staff — chỉ chạy khi chưa biết (isStaff === null).
+  // RLS: chỉ đọc được dòng staff của chính mình → có dòng = là staff.
   useEffect(() => {
-    if (status !== "in" || !supabase) return;
+    if (status !== "in" || !supabase || isStaff !== null) return;
+    let active = true;
     supabase
       .from("staff")
       .select("user_id")
       .maybeSingle()
-      .then(({ data }) => setIsStaff(!!data));
-  }, [status, supabase]);
+      .then(({ data }) => {
+        if (!active) return;
+        const ok = !!data;
+        if (uid) staffCache = { uid, isStaff: ok };
+        setIsStaff(ok);
+      });
+    return () => {
+      active = false;
+    };
+  }, [status, supabase, isStaff, uid]);
 
   if (status === "loading" || (status === "in" && isStaff === null))
     return <p className="p-6 text-center text-ink/40">{t("admin.checkingLogin")}</p>;
