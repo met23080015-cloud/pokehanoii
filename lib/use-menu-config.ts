@@ -18,12 +18,17 @@ export function useMenuConfig(): PriceConfig | undefined {
     const load = () =>
       supabase
         .from("menu_config")
-        .select("base_price, extra_poke_fee")
+        .select("base_price, extra_poke_fee, extra_base_fee, extra_topping_fee")
         .eq("id", 1)
         .maybeSingle()
         .then(({ data }) => {
           if (active && data)
-            setConfig({ basePrice: data.base_price, extraPokeFee: data.extra_poke_fee });
+            setConfig({
+              basePrice: data.base_price,
+              extraPokeFee: data.extra_poke_fee,
+              extraBaseFee: data.extra_base_fee,
+              extraToppingFee: data.extra_topping_fee,
+            });
         });
     load();
     const ch = supabase

@@ -3,7 +3,9 @@
   "pricing": {
     "currency": "VND",
     "basePrice": 198000,
-    "extraPokeFee": 48000
+    "extraPokeFee": 48000,
+    "extraBaseFee": 25000,
+    "extraToppingFee": 10000
   },
   "thresholds": {
     "_note": "Ngưỡng cân bằng 1 bowl, dùng cho AI review (Phase 06). CẦN CHỐT lại theo dinh dưỡng/quán.",

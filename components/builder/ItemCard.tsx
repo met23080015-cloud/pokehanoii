@@ -7,23 +7,29 @@ import { useT, useLang } from "@/lib/i18n";
 interface Props {
   item: MenuItem;
   qty: number;
-  mode: "single" | "multi" | "qty";
-  onToggle: () => void;
+  /** Số phần còn THÊM được (theo tồn kho). undefined = không giới hạn. */
+  addable?: number;
   onInc: () => void;
   onDec: () => void;
 }
 
-export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Props) {
+const LOW_STOCK = 5; // ngưỡng hiện nhãn "còn N phần"
+
+export default function ItemCard({ item, qty, addable, onInc, onDec }: Props) {
   const t = useT();
   const { lang } = useLang();
   const selected = qty > 0;
+  const canAdd = addable === undefined || addable > 0;
+  const lowStock = addable !== undefined && addable <= LOW_STOCK;
   // Đồ uống đo bằng ml; món còn lại đo bằng gram.
   const measureUnit = getItemGroup(item.id) === "drinks" ? "ml" : "g";
   // Tên chính theo ngôn ngữ đang chọn; dòng phụ là tên ngôn ngữ còn lại.
   const primary = itemName(item, lang);
   const secondary = lang === "en" ? item.vi : item.en;
-  // Bấm vào BẤT KỲ đâu trên thẻ đều chọn/tăng món. qty → +1, còn lại → bật/tắt.
-  const selectAction = () => (mode === "qty" ? onInc() : onToggle());
+  // Bấm vào BẤT KỲ đâu trên thẻ đều +1 (nếu còn tồn kho).
+  const selectAction = () => {
+    if (canAdd) onInc();
+  };
 
   return (
     <div
@@ -42,12 +48,6 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
           : "border-black/5 bg-white hover:border-brand-200"
       }`}
     >
-      {selected && mode !== "qty" && (
-        <span className="pointer-events-none absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[11px] font-bold text-white shadow-soft">
-          ✓
-        </span>
-      )}
-
       {item.image && (
         <div className="-mx-3 -mt-3 mb-1 overflow-hidden rounded-t-2xl bg-sand">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -77,39 +77,40 @@ export default function ItemCard({ item, qty, mode, onToggle, onInc, onDec }: Pr
         ) : null}
       </div>
 
-      {mode === "qty" && (
-        <div className="mt-1 flex items-center justify-between">
-          <span className="text-[11px] text-ink/50">
-            {t("builder.itemProtein", { n: item.protein ?? 0 })}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDec();
-              }}
-              disabled={qty <= 0}
-              aria-label={t("builder.decrease")}
-              className="press flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-lg leading-none text-ink/70 disabled:opacity-25"
-            >
-              −
-            </button>
-            <span className="w-5 text-center font-bold tabular-nums">{qty}</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onInc();
-              }}
-              aria-label={t("builder.increase")}
-              className="press flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-lg leading-none text-white"
-            >
-              +
-            </button>
-          </div>
+      <div className="mt-1 flex items-center justify-between">
+        <span className={`text-[11px] ${lowStock ? "font-semibold text-amber-600" : "text-ink/50"}`}>
+          {lowStock
+            ? t("builder.stockLeft", { n: addable as number })
+            : t("builder.itemProtein", { n: item.protein ?? 0 })}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDec();
+            }}
+            disabled={qty <= 0}
+            aria-label={t("builder.decrease")}
+            className="press flex h-7 w-7 items-center justify-center rounded-full border border-black/10 text-lg leading-none text-ink/70 disabled:opacity-25"
+          >
+            −
+          </button>
+          <span className="w-5 text-center font-bold tabular-nums">{qty}</span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (canAdd) onInc();
+            }}
+            disabled={!canAdd}
+            aria-label={t("builder.increase")}
+            className="press flex h-7 w-7 items-center justify-center rounded-full bg-brand-600 text-lg leading-none text-white disabled:opacity-25"
+          >
+            +
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
 }

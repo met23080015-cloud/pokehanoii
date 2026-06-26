@@ -25,17 +25,26 @@ const round1 = (n: number) => Math.round(n * 10) / 10;
 export interface PriceConfig {
   basePrice?: number;
   extraPokeFee?: number;
+  extraBaseFee?: number;
+  extraToppingFee?: number;
 }
+
+/** Nhóm tính phụ phí "mỗi phần thêm" (sốt/đồ trộn/topping/giòn) — ngoài đạm/nền/đồ uống. */
+const ADDON_GROUPS = new Set(["mixins", "sauces", "toppings", "crisps"]);
 
 /** Cỡ bát: vừa (Regular) hoặc thêm phần đạm (Extra Poke). */
 export type BowlSize = "regular" | "extra";
 
 /**
  * Tính tổng dinh dưỡng + giá từ selection.
- * Giá: basePrice + extraPokeFee * (số muỗng đạm vượt quá 1) + (Extra Poke ? extraPokeFee) + premiumFee.
- * Cỡ "extra" = thêm 1 phần đạm: cộng phụ phí extraPokeFee + macro của loại đạm đang chọn.
+ * Mô hình giá "thêm/bớt mọi món": basePrice đã gồm 1 lớp nền + 1 muỗng đạm; MỖI PHẦN THÊM đều tính tiền:
+ *   + extraPokeFee   × (muỗng đạm − 1)         (muỗng đạm đầu đã gồm trong base)
+ *   + extraBaseFee   × (lớp nền − 1)           (lớp nền đầu đã gồm trong base)
+ *   + (premiumFee | extraToppingFee) × qty     cho mỗi phần đồ trộn/sốt/topping/giòn
+ *   + price × qty                              cho đồ uống (giá riêng)
+ *   + extraPokeFee   nếu cỡ "extra" (thêm 1 muỗng đạm + macro loại đạm đang chọn)
  * Đây là NGUỒN CHÂN LÝ — server tính lại, AI không tự tính.
- * `config` ghi đè giá từ DB; `size` mặc định "regular" → giữ hành vi & test cũ.
+ * `config` ghi đè giá từ DB; `size` mặc định "regular".
  */
 export function computeTotals(
   selection: Selection,
@@ -46,10 +55,13 @@ export function computeTotals(
     protein = 0,
     fat = 0,
     fiber = 0,
-    premiumFees = 0,
+    addonFees = 0,
     proteinScoops = 0,
+    baseUnits = 0,
     premiumCount = 0,
     drinksTotal = 0;
+
+  const extraToppingFee = config?.extraToppingFee ?? pricing.extraToppingFee;
 
   for (const [id, qtyRaw] of Object.entries(selection)) {
     const qty = qtyRaw || 0;
@@ -64,11 +76,13 @@ export function computeTotals(
 
     const group = getItemGroup(id);
     if (group === "proteins") proteinScoops += qty;
+    else if (group === "bases") baseUnits += qty;
     // Đồ uống tính theo GIÁ RIÊNG (không dùng giá bowl), macro vẫn vào tổng.
-    if (group === "drinks") drinksTotal += (item.price ?? 0) * qty;
-    if (item.premiumFee) {
-      premiumFees += item.premiumFee * qty;
-      premiumCount += qty;
+    else if (group === "drinks") drinksTotal += (item.price ?? 0) * qty;
+    else if (group && ADDON_GROUPS.has(group)) {
+      // Topping premium tính theo premiumFee; còn lại theo phụ phí phần thêm chung.
+      addonFees += (item.premiumFee ?? extraToppingFee) * qty;
+      if (item.premiumFee) premiumCount += qty;
     }
   }
 
@@ -90,9 +104,11 @@ export function computeTotals(
 
   const basePrice = config?.basePrice ?? pricing.basePrice;
   const extraFee = config?.extraPokeFee ?? pricing.extraPokeFee;
+  const extraBaseFee = config?.extraBaseFee ?? pricing.extraBaseFee;
   const extraPoke =
     Math.max(0, proteinScoops - 1) * extraFee + extraProteinScoops * extraFee;
-  const price = basePrice + extraPoke + premiumFees + drinksTotal;
+  const extraBase = Math.max(0, baseUnits - 1) * extraBaseFee;
+  const price = basePrice + extraPoke + extraBase + addonFees + drinksTotal;
 
   return {
     kcal: Math.round(kcal),

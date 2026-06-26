@@ -2,21 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { getSupabaseClient } from "@/lib/supabase/client";
-
-type RecipeRow = { item_id: string; ingredient_id: string; qty_per_unit: number };
+import type { RecipeRow } from "@/lib/stock";
 
 /** Ngày hôm nay theo giờ VN (YYYY-MM-DD) — khớp cột date của ingredient_stock. */
 function todayVN(): string {
   return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" });
 }
 
+export interface StockState {
+  /** Món KHÔNG khả dụng = 86 thủ công ∪ hết nguyên liệu (không làm nổi 1 phần). */
+  unavailable: Set<string>;
+  /** ingredient_id -> tồn còn lại hôm nay. Nguyên liệu chưa có dòng tồn = vô hạn (vắng mặt). */
+  remaining: Map<string, number>;
+  /** Công thức BOM (tĩnh) — dùng để tính số phần còn thêm được cho từng món. */
+  recipes: RecipeRow[];
+}
+
+const EMPTY: StockState = { unavailable: new Set(), remaining: new Map(), recipes: [] };
+
 /**
- * Tập id món KHÔNG khả dụng = 86 thủ công ∪ hết nguyên liệu (tồn kho BOM hôm nay),
- * cập nhật realtime. Dùng ở builder để ẩn món. Trả Set rỗng nếu chưa cấu hình Supabase.
- * Nguyên liệu chưa có dòng tồn hôm nay = chưa giới hạn (vô hạn) → món vẫn hiện.
+ * Trạng thái tồn kho realtime cho builder: tập món ẩn + tồn còn lại + công thức.
+ * Trả EMPTY nếu chưa cấu hình Supabase. Nguyên liệu chưa có dòng tồn hôm nay = chưa giới hạn.
  */
-export function useUnavailable(): Set<string> {
-  const [ids, setIds] = useState<Set<string>>(new Set());
+export function useStock(): StockState {
+  const [state, setState] = useState<StockState>(EMPTY);
   const supabase = getSupabaseClient();
 
   useEffect(() => {
@@ -28,12 +37,12 @@ export function useUnavailable(): Set<string> {
 
     const recompute = () => {
       if (!active) return;
-      const out = new Set<string>(off);
+      const unavailable = new Set<string>(off);
       for (const r of recipes) {
         const rem = stock.get(r.ingredient_id);
-        if (rem !== undefined && rem < r.qty_per_unit) out.add(r.item_id);
+        if (rem !== undefined && rem < r.qty_per_unit) unavailable.add(r.item_id);
       }
-      setIds(out);
+      setState({ unavailable, remaining: new Map(stock), recipes });
     };
 
     const loadOff = () =>
@@ -79,5 +88,10 @@ export function useUnavailable(): Set<string> {
     };
   }, [supabase]);
 
-  return ids;
+  return state;
+}
+
+/** Chỉ tập món KHÔNG khả dụng (tương thích ngược). */
+export function useUnavailable(): Set<string> {
+  return useStock().unavailable;
 }

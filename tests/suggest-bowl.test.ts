@@ -4,11 +4,12 @@ import { computeTotals } from "@/lib/nutrition";
 
 describe("suggestBowl — tối ưu có ràng buộc", () => {
   it("đạt sàn calo + đạm trong ngân sách → feasible, đúng giới hạn", () => {
-    const r = suggestBowl({ budget: 300000, kcalTarget: 600, proteinMin: 40 });
+    // Topping nay tính phí → cần ngân sách rộng hơn để vừa chạm sàn vừa trong trần.
+    const r = suggestBowl({ budget: 350000, kcalTarget: 600, proteinMin: 40 });
     expect(r.feasible).toBe(true);
     expect(r.bowl).not.toBeNull();
     const t = r.bowl!.totals;
-    expect(t.price).toBeLessThanOrEqual(300000);
+    expect(t.price).toBeLessThanOrEqual(350000);
     expect(t.kcal).toBeGreaterThanOrEqual(600);
     expect(t.protein).toBeGreaterThanOrEqual(40);
   });

@@ -14,21 +14,22 @@ import ItemCard from "./ItemCard";
 interface Props {
   step: number;
   groupKey: GroupKey;
-  mode: "single" | "multi" | "qty";
   help?: string;
   diet?: DietFilter[];
   unavailable?: Set<string>;
+  /** item_id -> số phần còn thêm được (theo tồn kho). Vắng mặt = không giới hạn. */
+  headroom?: Record<string, number>;
 }
 
 export default function GroupStep({
   step,
   groupKey,
-  mode,
   help,
   diet = [],
   unavailable,
+  headroom,
 }: Props) {
-  const { selection, toggle, setQty, selectSingle } = useBowl();
+  const { selection, setQty } = useBowl();
   const { lang } = useLang();
   const items = groups[groupKey].filter(
     (it) => !isHiddenByDiet(it, diet) && !unavailable?.has(it.id),
@@ -56,12 +57,7 @@ export default function GroupStep({
               key={item.id}
               item={item}
               qty={qty}
-              mode={mode}
-              onToggle={() =>
-                mode === "single"
-                  ? selectSingle(groupKey, item.id)
-                  : toggle(item.id)
-              }
+              addable={headroom?.[item.id]}
               onInc={() => setQty(item.id, qty + 1)}
               onDec={() => setQty(item.id, Math.max(0, qty - 1))}
             />

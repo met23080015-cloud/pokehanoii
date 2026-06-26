@@ -43,6 +43,10 @@ export interface Pricing {
   currency: string;
   basePrice: number;
   extraPokeFee: number;
+  /** Phụ phí mỗi lớp nền THÊM (ngoài lớp nền đầu đã gồm trong basePrice). */
+  extraBaseFee: number;
+  /** Phụ phí mỗi phần đồ trộn/sốt/topping/giòn thường (topping premium dùng premiumFee). */
+  extraToppingFee: number;
 }
 
 export interface Thresholds {

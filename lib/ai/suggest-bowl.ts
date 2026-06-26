@@ -37,7 +37,7 @@ export interface SuggestResult {
   params: { budget?: number; kcalTarget?: number; proteinMin?: number };
 }
 
-const MAX_FILLERS = 8; // chặn nhồi quá nhiều topping miễn phí
+const MAX_FILLERS = 8; // chặn nhồi quá nhiều topping
 
 function describe(sel: Selection): { vi: string; en: string; qty: number }[] {
   return Object.entries(sel)
@@ -49,10 +49,10 @@ function describe(sel: Selection): { vi: string; en: string; qty: number }[] {
 }
 
 /**
- * Nhồi các topping/sauce/mixin/crisp MIỄN PHÍ (không premiumFee, không phải đồ
- * uống) để kéo kcal/đạm chạm sàn — món miễn phí nên KHÔNG đụng tới ngân sách.
- * Mỗi vòng chọn món bù được nhiều nhất cho chỉ tiêu đang thiếu; dừng khi đủ sàn,
- * hết món, hoặc chạm trần MAX_FILLERS.
+ * Nhồi các topping/sauce/mixin/crisp thường (không premiumFee, không phải đồ uống)
+ * để kéo kcal/đạm chạm sàn. LƯU Ý: mỗi phần thêm nay đều tính phí (extraToppingFee),
+ * nên nếu có ngân sách thì DỪNG trước khi vượt trần. Mỗi vòng chọn món bù được nhiều
+ * nhất cho chỉ tiêu đang thiếu; dừng khi đủ sàn, hết món, hoặc chạm trần MAX_FILLERS.
  */
 function fillToward(
   sel: Selection,
@@ -80,6 +80,11 @@ function fillToward(
       }
     }
     if (!pick) break; // không món nào bù được nữa
+    // Filler nay tính tiền (đồng giá nhau) → nếu thêm là vượt ngân sách thì ngừng.
+    if (p.budget != null) {
+      const next = computeTotals({ ...sel, [pick.id]: 1 }, undefined, size);
+      if (next.price > p.budget) break;
+    }
     sel[pick.id] = 1;
     used.add(pick.id);
   }
@@ -118,8 +123,8 @@ function isBetter(a: SuggestedBowl, b: SuggestedBowl, p: SuggestParams): boolean
 
 /**
  * Tìm tổ hợp poke bowl RẺ NHẤT đáp ứng ràng buộc ngân sách/calo/đạm.
- * Duyệt khung "đắt tiền" (base × loại đạm × số muỗng × cỡ), nhồi topping miễn phí
- * để chạm sàn calo/đạm, rồi tính lại bằng computeTotals (NGUỒN CHÂN LÝ → giá/macro
+ * Duyệt khung "đắt tiền" (base × loại đạm × số muỗng × cỡ), nhồi topping (có tính phí,
+ * tôn trọng ngân sách) để chạm sàn calo/đạm, rồi tính lại bằng computeTotals (NGUỒN CHÂN LÝ → giá/macro
  * khớp checkout). Không khả thi → trả phương án gần nhất kèm dữ liệu để AI giải thích.
  * Đồ uống & topping premium KHÔNG đưa vào auto-fill (giữ kết quả rẻ & gọn).
  */

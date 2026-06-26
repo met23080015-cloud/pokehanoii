@@ -47,6 +47,8 @@ describe("lib/menu — data loading & lookup", () => {
   it("pricing reflects data/menu.json values", () => {
     expect(pricing.basePrice).toBe(198000);
     expect(pricing.extraPokeFee).toBe(48000);
+    expect(pricing.extraBaseFee).toBe(25000);
+    expect(pricing.extraToppingFee).toBe(10000);
     expect(pricing.currency).toBe("VND");
   });
 
@@ -119,7 +121,7 @@ describe("computeTotals — pricing model", () => {
   // fat:     0.5 + 6.5*2 + 0 = 13.5
   // fiber:   1   + 0     + 0 = 1.0
   // proteinScoops: 2  (only poke-salmon is in "proteins" group)
-  // price: 198000 + (2-1)*48000 = 246000
+  // price: 198000 + (2-1)*48000 (extra scoop) + 1*10000 (sauce-shoyu add-on) = 256000
   it("multi-item bowl — correct macro summation and price", () => {
     const selection = {
       "base-sushi-rice": 1,
@@ -132,7 +134,26 @@ describe("computeTotals — pricing model", () => {
     expect(totals.fat).toBe(13.5);
     expect(totals.fiber).toBe(1);
     expect(totals.proteinScoops).toBe(2);
-    expect(totals.price).toBe(246000);
+    expect(totals.price).toBe(256000);
+  });
+
+  // Case 5b: extra base layer → +extraBaseFee (first base included)
+  it("two bases → price = basePrice + extraBaseFee (first base included)", () => {
+    const totals = computeTotals({ "base-sushi-rice": 1, "base-salad": 1 });
+    expect(totals.price).toBe(198000 + 25000); // 223000
+  });
+
+  // Case 5c: normal (non-premium) toppings → each portion charged extraToppingFee
+  it("two non-premium toppings → price = basePrice + 2 * extraToppingFee", () => {
+    const totals = computeTotals({ "top-wakame": 2 });
+    expect(totals.price).toBe(198000 + 2 * 10000); // 218000
+    expect(totals.premiumCount).toBe(0);
+  });
+
+  // Case 5d: add-on fee respects config override
+  it("config override changes add-on fee", () => {
+    const totals = computeTotals({ "sauce-shoyu": 1 }, { extraToppingFee: 5000 });
+    expect(totals.price).toBe(198000 + 5000);
   });
 
   // Edge: qty=0 items are ignored

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBowl } from "@/lib/store/bowl";
 import type { PayMethod } from "@/lib/supabase/types";
 import { getItem, isHiddenByDiet, type DietFilter } from "@/lib/menu";
-import { useUnavailable } from "@/lib/use-unavailable";
+import { useStock } from "@/lib/use-unavailable";
+import { computeHeadroom } from "@/lib/stock";
 import { setRecent, consumePendingLoad } from "@/lib/favorites";
 import { useT } from "@/lib/i18n";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
@@ -28,7 +29,12 @@ export default function OrderBuilder() {
   const t = useT();
   const [view, setView] = useState<View>("welcome");
   const [diet, setDiet] = useState<DietFilter[]>([]);
-  const unavailable = useUnavailable();
+  const { unavailable, remaining, recipes } = useStock();
+  // Số phần CÒN THÊM ĐƯỢC cho từng món (theo tồn kho + phần đã có trong giỏ) → chặn nút + khi hết.
+  const headroom = useMemo(
+    () => computeHeadroom(selection, recipes, remaining),
+    [selection, recipes, remaining],
+  );
 
   // Món vừa bị 86 (hết hàng) mà khách đã chọn → bỏ chọn để không tính tiền/calo "ma".
   useEffect(() => {
@@ -166,13 +172,13 @@ export default function OrderBuilder() {
       <CalorieTarget />
       <DietaryFilter value={diet} onChange={applyDiet} />
       <SizeSelector />
-      <GroupStep step={1} groupKey="bases" mode="single" help={t("builder.helpBases")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={2} groupKey="proteins" mode="qty" help={t("builder.helpProteins")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={3} groupKey="mixins" mode="multi" help={t("builder.helpMixins")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={4} groupKey="sauces" mode="single" help={t("builder.helpSauces")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={5} groupKey="toppings" mode="multi" help={t("builder.helpToppings")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={6} groupKey="crisps" mode="multi" help={t("builder.helpCrisps")} diet={diet} unavailable={unavailable} />
-      <GroupStep step={7} groupKey="drinks" mode="qty" help={t("builder.helpDrinks")} diet={diet} unavailable={unavailable} />
+      <GroupStep step={1} groupKey="bases" help={t("builder.helpBases")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={2} groupKey="proteins" help={t("builder.helpProteins")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={3} groupKey="mixins" help={t("builder.helpMixins")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={4} groupKey="sauces" help={t("builder.helpSauces")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={5} groupKey="toppings" help={t("builder.helpToppings")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={6} groupKey="crisps" help={t("builder.helpCrisps")} diet={diet} unavailable={unavailable} headroom={headroom} />
+      <GroupStep step={7} groupKey="drinks" help={t("builder.helpDrinks")} diet={diet} unavailable={unavailable} headroom={headroom} />
 
       <NutritionSidebar onCheckout={() => setView("checkout")} />
       <ChatWidget />

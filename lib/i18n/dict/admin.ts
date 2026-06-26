@@ -77,7 +77,7 @@ export const admin: Slice = {
 
       // Menu manager
       menuHint:
-        "Tắt món tạm hết hàng — builder của khách sẽ ẩn món đó <b>ngay lập tức</b>.",
+        "Tắt món tạm hết hàng — món đó sẽ ẩn khỏi màn chọn món của khách <b>ngay lập tức</b>.",
       itemOut: "Hết",
       itemIn: "Còn",
 
@@ -85,10 +85,12 @@ export const admin: Slice = {
       priceTitle: "Giá bán",
       priceBaseLabel: "Giá cơ bản / bát (đ)",
       priceExtraLabel: "Phụ phí mỗi muỗng đạm thêm (đ)",
+      priceBaseFeeLabel: "Phụ phí mỗi lớp nền thêm (đ)",
+      priceTopFeeLabel: "Phụ phí mỗi phần topping/đồ trộn/sốt (đ)",
       priceSave: "Lưu giá",
       priceSaving: "Đang lưu…",
       priceSaved: "✓ Đã lưu",
-      priceNote: "Đổi giá áp dụng ngay cho builder của khách (realtime).",
+      priceNote: "Giá mới áp dụng ngay cho khách, cập nhật realtime.",
       priceCurrent: " Hiện tại: {price}/bát.",
       saveFailed: "Lưu thất bại — phiên đăng nhập có thể đã hết hạn.",
 
@@ -121,7 +123,7 @@ export const admin: Slice = {
 
       // Inventory
       invHint:
-        "Hạn mức theo thứ cho từng nguyên liệu. Hôm nay là <b>{today}</b>. \"Còn lại\" cập nhật realtime khi có đơn. Hết → mọi món dùng nó tự ẩn ở builder.",
+        "Hạn mức theo thứ cho từng nguyên liệu. Hôm nay là <b>{today}</b>. \"Còn lại\" cập nhật realtime theo từng đơn. Khi hết, mọi món dùng nguyên liệu này sẽ tự ẩn khỏi màn chọn món của khách.",
       invColIngredient: "Nguyên liệu",
       invColToday: "Còn hôm nay",
       invRefill: "Nạp lại",
@@ -238,6 +240,8 @@ export const admin: Slice = {
       priceTitle: "Pricing",
       priceBaseLabel: "Base price / bowl (₫)",
       priceExtraLabel: "Surcharge per extra protein scoop (₫)",
+      priceBaseFeeLabel: "Surcharge per extra base (₫)",
+      priceTopFeeLabel: "Surcharge per topping/mix-in/sauce (₫)",
       priceSave: "Save price",
       priceSaving: "Saving…",
       priceSaved: "✓ Saved",

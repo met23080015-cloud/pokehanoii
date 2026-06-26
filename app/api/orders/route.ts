@@ -50,11 +50,16 @@ export async function POST(req: Request) {
   }
   const { data: cfg } = await supabase
     .from("menu_config")
-    .select("base_price, extra_poke_fee")
+    .select("base_price, extra_poke_fee, extra_base_fee, extra_topping_fee")
     .eq("id", 1)
     .maybeSingle();
   const priceConfig = cfg
-    ? { basePrice: cfg.base_price, extraPokeFee: cfg.extra_poke_fee }
+    ? {
+        basePrice: cfg.base_price,
+        extraPokeFee: cfg.extra_poke_fee,
+        extraBaseFee: cfg.extra_base_fee,
+        extraToppingFee: cfg.extra_topping_fee,
+      }
     : undefined;
 
   // NGUỒN CHÂN LÝ: server tự tính lại totals, không tin client.
