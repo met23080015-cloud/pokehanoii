@@ -14,7 +14,7 @@ export const ai: Slice = {
       chatTitle: "🤖 Tư vấn dinh dưỡng",
       close: "Đóng",
       welcome:
-        'Chào bạn! Hỏi mình cách build bát cân bằng nhé — vd: "1000 calo nhiều đạm ít béo nên ăn gì?"',
+        'Chào bạn! Cứ hỏi mình cách làm bát cân bằng nhé — ví dụ: "1000 calo, nhiều đạm ít béo thì nên ăn gì?"',
       typing: "Đang soạn…",
       errChat: "Lỗi: AI chưa sẵn sàng (kiểm tra API key).",
       inputPlaceholder: "Nhập câu hỏi…",

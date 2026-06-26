@@ -14,11 +14,11 @@ export const welcome: Slice = {
       servedAt: "Món sẽ được phục vụ tại",
       scanGateTitle: "Quét mã QR tại bàn",
       scanGateBody:
-        "Vui lòng quét mã QR được dán trên bàn của bạn để bắt đầu gọi món. Mỗi bàn có một mã riêng giúp nhân viên phục vụ đúng chỗ.",
+        "Quét mã QR dán trên bàn để bắt đầu gọi món. Mỗi bàn có một mã riêng, giúp nhân viên mang món đến đúng chỗ.",
       loginEarn: "Đăng nhập để tích điểm",
       cta: "Xem thực đơn – Gọi món →",
       thanks: "Cảm ơn bạn đã ghé Poke Hanoi 💚",
-      subtitle: "Tự build bát theo mục tiêu calo",
+      subtitle: "Tự tay làm bát theo mục tiêu calo của bạn",
     },
   },
   en: {
