@@ -78,4 +78,11 @@ describe("suggestBowl — tối ưu có ràng buộc", () => {
     expect(r.feasible).toBe(true);
     expect(r.bowl!.totals.price).toBe(198000);
   });
+
+  it("config (menu_config) chảy vào solver → giá khớp giá admin sửa", () => {
+    // admin hạ giá nền xuống 120k → bát rẻ nhất phải là 120k, không phải 198k mặc định
+    const r = suggestBowl({ config: { basePrice: 120000 } });
+    expect(r.feasible).toBe(true);
+    expect(r.bowl!.totals.price).toBe(120000);
+  });
 });

@@ -1,5 +1,5 @@
-import { groups, GROUP_LABELS, getItem, thresholds, type GroupKey } from "@/lib/menu";
-import type { BowlSize, Selection, Totals } from "@/lib/nutrition";
+import { groups, GROUP_LABELS, getItem, pricing, thresholds, type GroupKey } from "@/lib/menu";
+import type { BowlSize, PriceConfig, Selection, Totals } from "@/lib/nutrition";
 import type { Analytics } from "@/lib/analytics";
 import { formatVND } from "@/lib/nutrition";
 import { GUARDRAILS } from "@/lib/ai/guardrails";
@@ -46,6 +46,23 @@ export function describeBowl(bowl: BowlContext): string {
   ].join("\n");
 }
 
+/**
+ * Khối GIÁ: giá hiện tại CHÍNH XÁC của bát (hệ thống tính, khớp config) + bảng phụ phí tham khảo.
+ * Cho phép AI giải thích "thêm món tốn thêm bao nhiêu" mà KHÔNG tự cộng tổng (dễ sai).
+ */
+function pricingBlock(bowl: BowlContext, config?: PriceConfig): string {
+  const basePrice = config?.basePrice ?? pricing.basePrice;
+  const extraPokeFee = config?.extraPokeFee ?? pricing.extraPokeFee;
+  const extraBaseFee = config?.extraBaseFee ?? pricing.extraBaseFee;
+  const extraToppingFee = config?.extraToppingFee ?? pricing.extraToppingFee;
+  return `
+=== GIÁ (hệ thống tính — KHÔNG tự nhẩm tổng) ===
+- Giá hiện tại của bát: ${formatVND(bowl.totals.price)} (đã gồm mọi món đang chọn${bowl.size === "extra" ? " + Extra Poke" : ""}).
+- Tham khảo phụ phí mỗi phần THÊM: lớp nền +${formatVND(extraBaseFee)}; muỗng đạm +${formatVND(extraPokeFee)}; đồ trộn/sốt/topping/giòn +${formatVND(extraToppingFee)} (topping premium tính theo phụ phí ghi trên món); đồ uống theo giá riêng từng món.
+- Giá cơ bản 1 bát (gồm 1 lớp nền + 1 muỗng đạm): ${formatVND(basePrice)}.
+QUY TẮC GIÁ: Chỉ nêu con số tiền khi (a) đến từ công cụ suggestBowl, hoặc (b) nhắc lại đúng "giá hiện tại của bát" ở trên. TUYỆT ĐỐI KHÔNG tự cộng tổng giá khi khách thêm/bớt món — thay vào đó nói mức phụ phí MỖI PHẦN ở trên rồi mời khách bấm chọn để thấy tổng cập nhật. KHÔNG bịa giá.`;
+}
+
 /** Đoạn cá nhân hóa từ lịch sử khách (nếu có) — chèn vào prompt. */
 function profileBlock(profile?: string | null): string {
   return profile
@@ -64,6 +81,7 @@ export function buildSystemPrompt(
   bowl: BowlContext,
   profile?: string | null,
   lang: "vi" | "en" = "vi",
+  config?: PriceConfig,
 ): string {
   const en = lang === "en";
   return `${en ? "LANGUAGE: You MUST reply ENTIRELY in English. The Vietnamese text below is instructions/examples — follow them but WRITE YOUR ANSWER IN ENGLISH.\n\n" : ""}Bạn là trợ lý tư vấn dinh dưỡng thân thiện của quán Poke Hanoi. Trả lời NGẮN GỌN bằng ${en ? "tiếng Anh (English)" : "tiếng Việt"}.
@@ -94,7 +112,8 @@ TỐI ƯU THEO NGÂN SÁCH / CALO / ĐẠM (QUAN TRỌNG):
 ${buildMenuContext()}
 
 === TRẠNG THÁI BOWL CỦA KHÁCH ===
-${describeBowl(bowl)}${profileBlock(profile)}${langDirective(lang)}`;
+${describeBowl(bowl)}
+${pricingBlock(bowl, config)}${profileBlock(profile)}${langDirective(lang)}`;
 }
 
 /** Prompt insight kinh doanh cho admin — bơm số liệu thật, AI chỉ diễn giải. */

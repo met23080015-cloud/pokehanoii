@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { computeTotals } from "@/lib/nutrition";
 import { getItem, getItemGroup } from "@/lib/menu";
+import { getPriceConfig } from "@/lib/price-config-server";
 import { MAX_TABLE, isValidTable } from "@/lib/tables";
 import type { CreateOrderPayload, OrderLineItem } from "@/lib/supabase/types";
 
@@ -48,19 +49,7 @@ export async function POST(req: Request) {
       { status: 503 },
     );
   }
-  const { data: cfg } = await supabase
-    .from("menu_config")
-    .select("base_price, extra_poke_fee, extra_base_fee, extra_topping_fee")
-    .eq("id", 1)
-    .maybeSingle();
-  const priceConfig = cfg
-    ? {
-        basePrice: cfg.base_price,
-        extraPokeFee: cfg.extra_poke_fee,
-        extraBaseFee: cfg.extra_base_fee,
-        extraToppingFee: cfg.extra_topping_fee,
-      }
-    : undefined;
+  const priceConfig = await getPriceConfig();
 
   // NGUỒN CHÂN LÝ: server tự tính lại totals, không tin client.
   const totals = computeTotals(selection, priceConfig, size);

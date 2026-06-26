@@ -2,6 +2,7 @@ import { groups, getItem, type MenuItem, type DietFilter, isHiddenByDiet } from 
 import {
   computeTotals,
   type BowlSize,
+  type PriceConfig,
   type Selection,
   type Totals,
 } from "@/lib/nutrition";
@@ -14,6 +15,7 @@ export interface SuggestParams {
   diet?: DietFilter[];
   excludeIds?: string[]; // món hết hàng / 86 hôm nay
   maxScoops?: number; // số muỗng đạm tối đa khi duyệt (mặc định 3)
+  config?: PriceConfig; // giá hiện hành (menu_config) → khớp giá builder thật
 }
 
 export interface SuggestedBowl {
@@ -62,7 +64,7 @@ function fillToward(
 ): void {
   const used = new Set<string>();
   while (used.size < MAX_FILLERS) {
-    const t = computeTotals(sel, undefined, size);
+    const t = computeTotals(sel, p.config, size);
     const kcalDef = p.kcalTarget ? Math.max(0, p.kcalTarget - t.kcal) : 0;
     const protDef = p.proteinMin ? Math.max(0, p.proteinMin - t.protein) : 0;
     if (kcalDef <= 0 && protDef <= 0) break;
@@ -82,7 +84,7 @@ function fillToward(
     if (!pick) break; // không món nào bù được nữa
     // Filler nay tính tiền (đồng giá nhau) → nếu thêm là vượt ngân sách thì ngừng.
     if (p.budget != null) {
-      const next = computeTotals({ ...sel, [pick.id]: 1 }, undefined, size);
+      const next = computeTotals({ ...sel, [pick.id]: 1 }, p.config, size);
       if (next.price > p.budget) break;
     }
     sel[pick.id] = 1;
@@ -155,7 +157,7 @@ export function suggestBowl(p: SuggestParams): SuggestResult {
         for (const size of ["regular", "extra"] as BowlSize[]) {
           const sel: Selection = { [base.id]: 1, [prot.id]: scoops };
           fillToward(sel, size, fillers, p);
-          const totals = computeTotals(sel, undefined, size);
+          const totals = computeTotals(sel, p.config, size);
           const cand: SuggestedBowl = { selection: sel, size, items: describe(sel), totals };
 
           const floorsOk = meetsFloors(totals, p);

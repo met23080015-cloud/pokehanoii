@@ -7,6 +7,7 @@ import { computeTotals } from "@/lib/nutrition";
 import { customerProfile } from "@/lib/ai/profile";
 import { suggestBowl, type SuggestedBowl } from "@/lib/ai/suggest-bowl";
 import { getUnavailableIds } from "@/lib/ai/inventory-server";
+import { getPriceConfig } from "@/lib/price-config-server";
 import { sanitizeMessages } from "@/lib/ai/guardrails";
 
 export const runtime = "nodejs";
@@ -57,6 +58,9 @@ export async function POST(req: Request) {
       .slice(-12),
   );
 
+  // Giá hiện hành (admin sửa được) → AI tư vấn GIÁ khớp builder thật, không lệch.
+  const priceConfig = await getPriceConfig();
+
   // NGUỒN CHÂN LÝ: tính lại totals server-side (không tin số client gửi) + tránh
   // crash khi body thiếu totals.
   const size = body.bowl?.size === "extra" ? "extra" : "regular";
@@ -64,7 +68,7 @@ export async function POST(req: Request) {
     selection: body.bowl?.selection ?? {},
     target: body.bowl?.target ?? 0,
     size,
-    totals: computeTotals(body.bowl?.selection ?? {}, undefined, size),
+    totals: computeTotals(body.bowl?.selection ?? {}, priceConfig, size),
   };
 
   const lang = body.lang === "en" ? "en" : "vi";
@@ -94,7 +98,7 @@ export async function POST(req: Request) {
       // nên giá trị nhỏ chắc chắn là đơn vị "nghìn" → quy về VND.
       if (budget != null && budget > 0 && budget < 2000) budget *= 1000;
       const excludeIds = await getUnavailableIds();
-      const r = suggestBowl({ budget, kcalTarget, proteinMin, diet, excludeIds });
+      const r = suggestBowl({ budget, kcalTarget, proteinMin, diet, excludeIds, config: priceConfig });
       return {
         feasible: r.feasible,
         params: r.params,
@@ -107,7 +111,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: openai("gpt-4o-mini"),
-    system: buildSystemPrompt(safeBowl, profile, lang),
+    system: buildSystemPrompt(safeBowl, profile, lang, priceConfig),
     messages,
     temperature: 0.5,
     tools: { suggestBowl: suggestBowlTool },
