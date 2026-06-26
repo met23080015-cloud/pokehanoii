@@ -7,6 +7,7 @@ import { computeTotals } from "@/lib/nutrition";
 import { customerProfile } from "@/lib/ai/profile";
 import { suggestBowl, type SuggestedBowl } from "@/lib/ai/suggest-bowl";
 import { getUnavailableIds } from "@/lib/ai/inventory-server";
+import { sanitizeMessages } from "@/lib/ai/guardrails";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -49,9 +50,12 @@ export async function POST(req: Request) {
   }
 
   // Chỉ nhận user/assistant — chặn client tự chèn role:"system" (prompt injection).
-  const messages = (Array.isArray(body.messages) ? body.messages : [])
-    .filter((m) => m.role === "user" || m.role === "assistant")
-    .slice(-12);
+  // Rồi sanitize text user: vô hiệu hóa token điều khiển / nhãn vai trò giả.
+  const messages = sanitizeMessages(
+    (Array.isArray(body.messages) ? body.messages : [])
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .slice(-12),
+  );
 
   // NGUỒN CHÂN LÝ: tính lại totals server-side (không tin số client gửi) + tránh
   // crash khi body thiếu totals.

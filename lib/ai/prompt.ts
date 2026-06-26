@@ -2,6 +2,7 @@ import { groups, GROUP_LABELS, getItem, thresholds, type GroupKey } from "@/lib/
 import type { BowlSize, Selection, Totals } from "@/lib/nutrition";
 import type { Analytics } from "@/lib/analytics";
 import { formatVND } from "@/lib/nutrition";
+import { GUARDRAILS } from "@/lib/ai/guardrails";
 
 /** Bối cảnh menu nén lại cho AI (tên + macro + id). AI chỉ dùng số này, không bịa. */
 export function buildMenuContext(): string {
@@ -66,6 +67,8 @@ export function buildSystemPrompt(
 ): string {
   const en = lang === "en";
   return `${en ? "LANGUAGE: You MUST reply ENTIRELY in English. The Vietnamese text below is instructions/examples — follow them but WRITE YOUR ANSWER IN ENGLISH.\n\n" : ""}Bạn là trợ lý tư vấn dinh dưỡng thân thiện của quán Poke Hanoi. Trả lời NGẮN GỌN bằng ${en ? "tiếng Anh (English)" : "tiếng Việt"}.
+
+${GUARDRAILS}
 
 NHIỆM VỤ: giúp khách tự build poke bowl cân bằng theo mục tiêu calo. Gợi ý món nên thêm/bớt, giải thích thiếu/dư chất gì.
 
